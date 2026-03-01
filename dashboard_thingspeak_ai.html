@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rover IoT Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --title-font: 'Orbitron', 'Segoe UI', sans-serif;
+  --bg-a: #08210f;
+  --bg-b: #12321c;
+  --cyan: #33b267;   /* main accent */
+  --safe: #33b267;
+  --warn: #8fbf3f;
+  --danger: #d64545;
+  --accent-color: #2f8a55;
+  --title-color: #b8ffd0;
+  --ui-text: #8fe7b5;
+  --ui-border: #57bf81;
+  --ui-strong: #b9ffd5;
+  --toggle-on: #63da96;
+}
+  * { box-sizing: border-box; }
+
+  body {
+    background: linear-gradient(135deg, var(--bg-a), var(--bg-b));
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin: 0;
+  }
+
+  h1 {
+    color: var(--title-color);
+    text-shadow: 0 0 12px rgba(141, 255, 178, 0.65);
+    font-family: var(--title-font);
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    margin-bottom: 8px;
+  }
+
+  .legend {
+    margin-bottom: 18px;
+    font-size: 15px;
+    font-family: var(--title-font);
+  }
+
+  .legend span { margin-right: 14px; }
+
+  .cards-container {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 24px;
+    width: 100%;
+  }
+
+  .card {
+    background: rgba(20, 20, 40, 0.92);
+    border-radius: 16px;
+    box-shadow: 0 0 20px var(--accent-color);
+    padding: 22px;
+    width: 285px;
+    text-align: center;
+    transition: 0.25s;
+  }
+
+  .card:hover {
+    box-shadow: 0 0 38px var(--accent-color);
+    transform: translateY(-3px);
+  }
+
+  .card h2 {
+    color: var(--title-color);
+    text-shadow: 0 0 10px rgba(141, 255, 178, 0.45);
+    margin-top: 0;
+    font-family: var(--title-font);
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    font-size: 1.02rem;
+  }
+
+  .reading {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 8px 0;
+  }
+
+  .sensor-toggle {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+  }
+
+  .sensor-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--ui-strong);
+    font-weight: 600;
+  }
+
+  .sensor-toggle input[type="checkbox"] {
+    width: 40px;
+    height: 20px;
+    appearance: none;
+    background: #222;
+    border-radius: 10px;
+    position: relative;
+    outline: none;
+    transition: 0.3s;
+  }
+
+  .sensor-toggle input[type="checkbox"]:checked {
+    background: var(--toggle-on);
+    box-shadow: 0 0 8px rgba(99, 218, 150, 0.65);
+  }
+
+  .sensor-toggle input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 1px;
+    left: 1px;
+    transition: 0.3s;
+  }
+
+  .sensor-toggle input[type="checkbox"]:checked::before {
+    transform: translateX(20px);
+    background: #000;
+  }
+
+  table {
+    margin-top: 14px;
+    border-collapse: collapse;
+    color: var(--ui-text);
+    font-size: 13px;
+    width: 100%;
+  }
+
+  table, th, td {
+    border: 1px solid var(--ui-border);
+    padding: 7px 10px;
+  }
+
+  th {
+    background: rgba(87, 191, 129, 0.22);
+    color: var(--ui-strong);
+    font-family: var(--title-font);
+    letter-spacing: 0.6px;
+  }
+
+  .humidity-gauge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .humidity-gauge {
+    width: 165px;
+    height: 165px;
+    border-radius: 50%;
+    background: conic-gradient(var(--safe) 0deg, rgba(255, 255, 255, 0.1) 0deg);
+    position: relative;
+    box-shadow: 0 0 20px rgba(29,185,84);
+  }
+
+  .humidity-gauge::after {
+    content: '';
+    position: absolute;
+    inset: 16px;
+    border-radius: 50%;
+    background: rgba(12, 18, 30, 0.95);
+  }
+
+  .humidity-value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #e8ffff;
+  }
+
+  .humidity-label {
+    color: #bff;
+    font-size: 0.92rem;
+  }
+
+  .ai-panel {
+    width: min(950px, 96vw);
+    text-align: left;
+    margin-bottom: 24px;
+  }
+
+  #aiStatus {
+    font-weight: 800;
+    font-size: 1.18rem;
+  }
+
+  #aiReason {
+    margin-top: 8px;
+    color: #cff;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  #aiForecast {
+    margin-top: 8px;
+    color: #ffe78a;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  #aiActionHeader {
+    margin-top: 12px;
+    margin-bottom: 8px;
+    color: var(--title-color);
+    font-family: var(--title-font);
+    font-size: 1rem;
+  }
+
+  #actionList {
+    margin: 0;
+    padding-left: 18px;
+    color: #ecffff;
+    font-size: 0.93rem;
+    line-height: 1.5;
+  }
+
+  #lastUpdated {
+    margin-top: 12px;
+    color: #9ff;
+    font-size: 0.9rem;
+  }
+
+  #charts-container {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .chart-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .chart-title {
+    margin: 0 0 8px 0;
+    color: var(--title-color);
+    text-shadow: 0 0 10px rgba(141, 255, 178, 0.45);
+    font-family: var(--title-font);
+    letter-spacing: 0.6px;
+    font-size: 0.95rem;
+  }
+
+  canvas {
+    background: rgba(20, 20, 40, 0.82);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 0 20px var(--accent-color);
+    width: 540px;
+    height: 290px;
+    max-width: 95vw;
+  }
+
+  @media (max-width: 700px) {
+    .card { width: 100%; }
+    .humidity-gauge { width: 145px; height: 145px; }
+    canvas { width: 100% !important; height: auto !important; max-width: 100% !important; }
+  }
+</style>
+</head>
+<body>
+<h1>Rover IoT Dashboard</h1>
+<div class="legend">
+  <span style="color:#5ad88d;">Green = Safe</span>
+  <span style="color:#f00;">Red = Unsafe</span>
+</div>
+
+<div class="cards-container">
+  <div class="card">
+    <h2>Ultrasonic Distance (cm)</h2>
+    <p class="reading" id="ultrasonic">--</p>
+    <div class="sensor-toggle">
+      <label><input type="checkbox" id="toggleUltrasonic" checked /> Sensor ON/OFF</label>
+    </div>
+    <table id="ultrasonicTable"><tr><th>Time</th><th>Distance (cm)</th></tr></table>
+  </div>
+
+  <div class="card">
+    <h2>Soil Moisture</h2>
+    <p class="reading" id="soil">--</p>
+    <div class="sensor-toggle">
+      <label><input type="checkbox" id="toggleSoil" checked /> Sensor ON/OFF</label>
+    </div>
+    <table id="soilTable"><tr><th>Time</th><th>Soil Moisture</th></tr></table>
+  </div>
+
+  <div class="card">
+    <h2>Gas Sensor (MQ-135)</h2>
+    <p class="reading" id="gas">--</p>
+    <div class="sensor-toggle">
+      <label><input type="checkbox" id="toggleGas" checked /> Sensor ON/OFF</label>
+    </div>
+    <table id="gasTable"><tr><th>Time</th><th>Gas Value</th></tr></table>
+  </div>
+
+  <div class="card">
+    <h2>Temperature (degC)</h2>
+    <p class="reading" id="temperature">--</p>
+    <table id="temperatureTable"><tr><th>Time</th><th>Temperature</th></tr></table>
+  </div>
+
+  <div class="card">
+    <h2>Humidity Gauge (%)</h2>
+    <div class="humidity-gauge-wrap">
+      <div class="humidity-gauge" id="humidityGauge">
+        <div class="humidity-value" id="humidityGaugeValue">--</div>
+      </div>
+      <p class="humidity-label" id="humidityGaugeLabel">Waiting for humidity data...</p>
+    </div>
+    <table id="humidityTable"><tr><th>Time</th><th>Humidity (%)</th></tr></table>
+  </div>
+</div>
+
+<div class="card ai-panel">
+  <h2>AI Plant Status</h2>
+  <p id="aiStatus">--</p>
+  <p id="aiReason">Waiting for data...</p>
+  <p id="aiForecast">Forecast: Waiting for enough trend data...</p>
+  <p id="aiActionHeader">Recommended Actions</p>
+  <ol id="actionList">
+    <li>Waiting for live data before generating actions.</li>
+  </ol>
+  <p id="lastUpdated">Last updated: --</p>
+</div>
+
+<div id="charts-container">
+  <div class="chart-panel">
+    <h3 class="chart-title">Ultrasonic Distance (cm)</h3>
+    <canvas id="ultrasonicChart" width="540" height="290"></canvas>
+  </div>
+
+  <div class="chart-panel">
+    <h3 class="chart-title">Soil Moisture</h3>
+    <canvas id="soilChart" width="540" height="290"></canvas>
+  </div>
+
+  <div class="chart-panel">
+    <h3 class="chart-title">Gas Sensor (MQ-135)</h3>
+    <canvas id="gasChart" width="540" height="290"></canvas>
+  </div>
+
+  <div class="chart-panel">
+    <h3 class="chart-title">Temperature Bar Chart (degC)</h3>
+    <canvas id="temperatureBarChart" width="540" height="290"></canvas>
+  </div>
+</div>
+
+<script>
+const THINGSPEAK_CHANNEL_ID = '3242443';
+const THINGSPEAK_READ_API_KEY = 'FYC6VEXZR1EEVI3B';
+const POLL_INTERVAL_MS = 15000;
+
+const ultrasonicData = { labels: [], data: [] };
+const soilData = { labels: [], data: [] };
+const gasData = { labels: [], data: [] };
+const temperatureBarData = { labels: [], data: [] };
+
+let previousSnapshot = null;
+
+const ranges = {
+  ultrasonic: { min: 0, max: 200 },
+  soil: { min: 300, max: 700 },
+  gas: { min: 0, max: 200 }
+};
+
+const DARK_ACCENT = '#2f8a55';
+const TITLE_ACCENT = '#b8ffd0';
+
+function hexToRgba(hex, alpha) {
+  const clean = hex.replace('#', '');
+  const bigint = parseInt(clean.length === 3
+    ? clean.split('').map(c => c + c).join('')
+    : clean, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function createLineChart(ctx, dataObj, label, color, range, maxY) {
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: dataObj.labels,
+      datasets: [{
+        label,
+        data: dataObj.data,
+        borderColor: color,
+        backgroundColor: hexToRgba(DARK_ACCENT, 0.2),
+        fill: true,
+        tension: 0.3,
+        segment: {
+          borderColor: seg => {
+            const prev = seg.p0.parsed.y;
+            const next = seg.p1.parsed.y;
+            return (prev < range.min || prev > range.max || next < range.min || next > range.max) ? '#ff5757' : color;
+          }
+        }
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: true, labels: { color: '#e8ffff' } },
+        title: { display: true, text: label, color: TITLE_ACCENT }
+      },
+      scales: {
+        y: { beginAtZero: true, max: maxY, ticks: { color: '#dff' } },
+        x: { ticks: { color: '#bff' } }
+      }
+    }
+  });
+}
+
+function createTemperatureBarChart(ctx, dataObj) {
+  return new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: dataObj.labels,
+      datasets: [{
+        label: 'Temperature (degC)',
+        data: dataObj.data,
+        borderColor: DARK_ACCENT,
+        backgroundColor: dataObj.data.map(() => hexToRgba(DARK_ACCENT, 0.85)),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: true, labels: { color: '#e8ffff' } },
+        title: { display: true, text: 'Temperature', color: TITLE_ACCENT }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 50, ticks: { color: '#dff' } },
+        x: { ticks: { color: '#bff' } }
+      }
+    }
+  });
+}
+
+const ultrasonicChart = createLineChart(
+  document.getElementById('ultrasonicChart').getContext('2d'),
+  ultrasonicData,
+  'Distance',
+  DARK_ACCENT,
+  { min: 100, max: 1000 },
+  1000
+);
+
+const soilChart = createLineChart(
+  document.getElementById('soilChart').getContext('2d'),
+  soilData,
+  'Soil Moisture',
+  DARK_ACCENT,
+  { min: 300, max: 700 },
+  1100
+);
+
+const gasChart = createLineChart(
+  document.getElementById('gasChart').getContext('2d'),
+  gasData,
+  'Gas',
+  '#ffd23f',
+  ranges.gas,
+  800
+);
+
+const temperatureBarChart = createTemperatureBarChart(
+  document.getElementById('temperatureBarChart').getContext('2d'),
+  temperatureBarData
+);
+
+let ultrasonicEnabled = true;
+let soilEnabled = true;
+let gasEnabled = true;
+
+document.getElementById('toggleUltrasonic').addEventListener('change', e => ultrasonicEnabled = e.target.checked);
+document.getElementById('toggleSoil').addEventListener('change', e => soilEnabled = e.target.checked);
+document.getElementById('toggleGas').addEventListener('change', e => gasEnabled = e.target.checked);
+
+function addPoint(dataObj, chart, label, value, maxPoints = 20) {
+  dataObj.labels.push(label);
+  dataObj.data.push(value);
+  if (dataObj.labels.length > maxPoints) {
+    dataObj.labels.shift();
+    dataObj.data.shift();
+  }
+
+  if (chart.canvas.id === 'temperatureBarChart') {
+    chart.data.datasets[0].backgroundColor = dataObj.data.map(() => hexToRgba(DARK_ACCENT, 0.85));
+  }
+
+  chart.update();
+}
+
+function addRow(tableId, timeText, valueText) {
+  const table = document.getElementById(tableId);
+  const row = table.insertRow(-1);
+  row.insertCell(0).innerText = timeText;
+  row.insertCell(1).innerText = valueText;
+  if (table.rows.length > 21) table.deleteRow(1);
+}
+
+function updateHumidityGauge(value) {
+  const gauge = document.getElementById('humidityGauge');
+  const text = document.getElementById('humidityGaugeValue');
+  const label = document.getElementById('humidityGaugeLabel');
+
+  if (Number.isNaN(value) || value <= -100) {
+    gauge.style.background = 'conic-gradient(rgba(255,255,255,0.15) 0deg, rgba(255,255,255,0.15) 360deg)';
+    text.innerText = '--';
+    label.innerText = 'Humidity sensor unavailable';
+    return;
+  }
+
+  const clamped = Math.max(0, Math.min(100, value));
+  const angle = (clamped / 100) * 360;
+
+  let color = '#1db954';
+  let condition = 'Optimal humidity';
+  if (clamped < 40) {
+    color = '#ffd23f';
+    condition = 'Low humidity';
+  } else if (clamped > 80) {
+    color = '#ff5757';
+    condition = 'High humidity';
+  }
+
+  gauge.style.background = `conic-gradient(${color} ${angle}deg, rgba(255,255,255,0.15) ${angle}deg 360deg)`;
+  text.innerText = `${clamped.toFixed(0)}%`;
+  label.innerText = condition;
+}
+
+function clamp(v, lo, hi) {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+function scoreRange(value, minGood, maxGood, hardMin, hardMax) {
+  if (value >= minGood && value <= maxGood) return 1;
+  if (value < hardMin || value > hardMax) return 0;
+  if (value < minGood) return (value - hardMin) / (minGood - hardMin);
+  return (hardMax - value) / (hardMax - maxGood);
+}
+
+function localPrediction(distance, soil, gas, temp, hum) {
+  if ([distance, soil, gas, temp, hum].some(v => Number.isNaN(v))) return null;
+  if (temp <= -100 || hum <= -100) return null;
+
+  const distScore = scoreRange(distance, 15, 120, 5, 200);
+  const soilScore = scoreRange(soil, 350, 700, 200, 950);
+  const gasScore = scoreRange(gas, 0, 180, 0, 500);
+  const tempScore = scoreRange(temp, 18, 30, 10, 40);
+  const humScore = scoreRange(hum, 45, 75, 20, 95);
+
+  const weighted = distScore * 0.10 + soilScore * 0.25 + gasScore * 0.30 + tempScore * 0.20 + humScore * 0.15;
+  const score = Math.round(clamp(weighted, 0, 1) * 100);
+  const conf = clamp(0.55 + ((distScore + soilScore + gasScore + tempScore + humScore) / 5) * 0.45, 0.55, 1.0);
+  const cls = score >= 70 ? 1 : 0;
+  return { score, cls, conf };
+}
+
+function renderAI(score, cls, conf, sourceText) {
+  const aiStatus = document.getElementById('aiStatus');
+  const aiReason = document.getElementById('aiReason');
+
+  if (Number.isNaN(score)) {
+    aiStatus.innerText = '--';
+    aiStatus.style.color = '#fff';
+    aiReason.innerText = 'Waiting for AI values...';
+    return;
+  }
+
+  const label = cls === 1 ? 'Suitable' : 'Not Suitable';
+  aiStatus.innerText = `${label} | Score: ${score}/100 | Confidence: ${conf.toFixed(2)}`;
+  aiStatus.style.color = cls === 1 ? '#72e4a2' : '#ff5757';
+  aiReason.innerText = sourceText;
+}
+
+function getTrend(values) {
+  if (values.length < 2) return 0;
+  return values[values.length - 1] - values[0];
+}
+
+function classifyTrend(delta, deadband) {
+  if (delta > deadband) return 'rising';
+  if (delta < -deadband) return 'falling';
+  return 'stable';
+}
+
+function getSignificantChanges(prev, curr) {
+  if (!prev) return [];
+
+  const deltas = {
+    distance: curr.distance - prev.distance,
+    soil: curr.soil - prev.soil,
+    gas: curr.gas - prev.gas,
+    temp: curr.temp - prev.temp,
+    hum: curr.hum - prev.hum
+  };
+
+  const changes = [];
+  if (Math.abs(deltas.distance) >= 20) changes.push(`distance ${deltas.distance > 0 ? 'increased' : 'dropped'} by ${Math.abs(Math.round(deltas.distance))} cm`);
+  if (Math.abs(deltas.soil) >= 50) changes.push(`soil moisture ${deltas.soil > 0 ? 'increased' : 'dropped'} by ${Math.abs(Math.round(deltas.soil))}`);
+  if (Math.abs(deltas.gas) >= 25) changes.push(`gas level ${deltas.gas > 0 ? 'increased' : 'dropped'} by ${Math.abs(Math.round(deltas.gas))}`);
+  if (Math.abs(deltas.temp) >= 1.5) changes.push(`temperature ${deltas.temp > 0 ? 'increased' : 'decreased'} by ${Math.abs(deltas.temp).toFixed(1)} degC`);
+  if (Math.abs(deltas.hum) >= 5) changes.push(`humidity ${deltas.hum > 0 ? 'increased' : 'decreased'} by ${Math.abs(deltas.hum).toFixed(1)}%`);
+
+  return changes;
+}
+
+function updateForecastAndActions(distance, soil, gas, temp, hum, score, cls, significantChanges) {
+  const aiForecast = document.getElementById('aiForecast');
+  const actionList = document.getElementById('actionList');
+  const actions = [];
+
+  const soilTrend = classifyTrend(getTrend(soilData.data), 15);
+  const gasTrend = classifyTrend(getTrend(gasData.data), 8);
+  const distTrend = classifyTrend(getTrend(ultrasonicData.data), 5);
+  const tempTrend = classifyTrend(getTrend(temperatureBarData.data), 1);
+
+  let forecast = 'Forecast: Conditions likely to remain stable in next 30-45 minutes.';
+
+  if (!Number.isNaN(gas) && gas > 220) {
+    forecast = 'Forecast: Air quality may worsen soon if ventilation is not improved.';
+  } else if (!Number.isNaN(soil) && soil < 330) {
+    forecast = 'Forecast: Root zone may dry out soon; growth slowdown is likely.';
+  } else if (!Number.isNaN(temp) && temp > 32) {
+    forecast = 'Forecast: Heat stress risk is increasing for the plant.';
+  } else if (!Number.isNaN(hum) && hum < 40) {
+    forecast = 'Forecast: Low humidity may increase water demand over the next hour.';
+  }
+
+  if (significantChanges.length > 0) {
+    actions.push(`Significant change detected: ${significantChanges[0]}. Run a quick manual re-check now.`);
+  }
+
+  if (cls === 1 && score >= 85) {
+    actions.push('Continue current settings and monitor every 15 minutes.');
+  } else if (cls === 1 && score >= 70) {
+    actions.push('Conditions are acceptable, but keep monitoring for drift every 10 minutes.');
+  } else {
+    actions.push('Recheck nutrient solution and stabilize environment before next growth cycle.');
+  }
+
+  if (!Number.isNaN(soil)) {
+    if (soil < 330) actions.push('Increase water flow or irrigation interval slightly (5-10%).');
+    if (soil > 780) actions.push('Reduce water flow and improve drainage to avoid over-saturation.');
+    if (soilTrend === 'falling') actions.push('Soil moisture trend is falling; schedule a near-term watering pulse.');
+  }
+
+  if (!Number.isNaN(gas)) {
+    if (gas > 220) actions.push('Increase ventilation immediately; inspect for gas buildup sources.');
+    if (gasTrend === 'rising') actions.push('Gas trend is rising; keep fans ON and recheck in 10 minutes.');
+  }
+
+  if (!Number.isNaN(temp)) {
+    if (temp > 32) actions.push('Lower temperature using airflow or shading; target 18-30 degC.');
+    if (temp < 16) actions.push('Raise ambient temperature; low temperature can slow nutrient uptake.');
+    if (tempTrend === 'rising') actions.push('Temperature is trending upward; prepare cooling before stress begins.');
+  }
+
+  if (!Number.isNaN(hum)) {
+    if (hum < 40) actions.push('Increase humidity slightly (mist/humidifier) to reduce plant stress.');
+    if (hum > 80) actions.push('Reduce humidity and increase airflow to prevent fungal risk.');
+  }
+
+  if (!Number.isNaN(distance) && distance < 20) {
+    actions.push('Obstacle detected close to rover path; reposition rover before the next scan.');
+  }
+  if (distTrend === 'falling') {
+    actions.push('Rover is moving closer to objects; verify path clearance.');
+  }
+
+  const uniqueActions = [...new Set(actions)].slice(0, 7);
+  aiForecast.innerText = forecast;
+  actionList.innerHTML = uniqueActions.map(item => `<li>${item}</li>`).join('');
+}
+
+async function fetchLatestThingSpeak() {
+  try {
+    const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds/last.json?api_key=${THINGSPEAK_READ_API_KEY}`;
+    const res = await fetch(url, { cache: 'no-store' });
+
+    if (!res.ok) {
+      throw new Error(`ThingSpeak HTTP ${res.status}`);
+    }
+
+    const feed = await res.json();
+
+    const distance = parseFloat(feed.field1);
+    const soil = parseFloat(feed.field2);
+    const gas = parseFloat(feed.field3);
+    const temp = parseFloat(feed.field4);
+    const hum = parseFloat(feed.field5);
+
+    const snapshot = { distance, soil, gas, temp, hum };
+    const significantChanges = getSignificantChanges(previousSnapshot, snapshot);
+    previousSnapshot = snapshot;
+
+    const aiScoreField = parseFloat(feed.field6);
+    const aiClassField = parseInt(feed.field7, 10);
+    const aiConfField = parseFloat(feed.field8);
+
+    const ts = feed.created_at ? new Date(feed.created_at) : new Date();
+    const timeText = ts.toLocaleTimeString();
+    document.getElementById('lastUpdated').innerText = `Last updated: ${ts.toLocaleString()}`;
+
+    if (ultrasonicEnabled && !Number.isNaN(distance)) {
+      document.getElementById('ultrasonic').innerText = distance.toFixed(1);
+      addPoint(ultrasonicData, ultrasonicChart, timeText, distance);
+      addRow('ultrasonicTable', timeText, distance.toFixed(1));
+    }
+
+    if (soilEnabled && !Number.isNaN(soil)) {
+      document.getElementById('soil').innerText = soil.toFixed(0);
+      addPoint(soilData, soilChart, timeText, soil);
+      addRow('soilTable', timeText, soil.toFixed(0));
+    }
+
+    if (gasEnabled && !Number.isNaN(gas)) {
+      document.getElementById('gas').innerText = gas.toFixed(0);
+      addPoint(gasData, gasChart, timeText, gas);
+      addRow('gasTable', timeText, gas.toFixed(0));
+    }
+
+    if (!Number.isNaN(temp) && temp > -100) {
+      document.getElementById('temperature').innerText = temp.toFixed(1);
+      addRow('temperatureTable', timeText, temp.toFixed(1));
+      addPoint(temperatureBarData, temperatureBarChart, timeText, temp);
+    } else {
+      document.getElementById('temperature').innerText = '--';
+    }
+
+    if (!Number.isNaN(hum) && hum > -100) {
+      addRow('humidityTable', timeText, hum.toFixed(1));
+      updateHumidityGauge(hum);
+    } else {
+      updateHumidityGauge(NaN);
+    }
+
+    if (!Number.isNaN(aiScoreField) && !Number.isNaN(aiClassField) && !Number.isNaN(aiConfField)) {
+      renderAI(aiScoreField, aiClassField, aiConfField, 'AI source: Arduino rule model (ThingSpeak fields 6-8).');
+      updateForecastAndActions(distance, soil, gas, temp, hum, aiScoreField, aiClassField, significantChanges);
+    } else {
+      const fallback = localPrediction(distance, soil, gas, temp, hum);
+      if (fallback) {
+        renderAI(fallback.score, fallback.cls, fallback.conf, 'AI source: Dashboard fallback model (computed locally).');
+        updateForecastAndActions(distance, soil, gas, temp, hum, fallback.score, fallback.cls, significantChanges);
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching ThingSpeak data:', err.message);
+    document.getElementById('lastUpdated').innerText = `Last updated: error (${err.message})`;
+  }
+}
+
+fetchLatestThingSpeak();
+setInterval(fetchLatestThingSpeak, POLL_INTERVAL_MS);
+</script>
+</body>
+</html>
