@@ -1,48 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rover AI Command Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root {
-    --bg-a: #081f12;
-    --bg-b: #123723;
-    --panel: rgba(15, 33, 23, 0.92);
-    --panel-soft: rgba(16, 39, 27, 0.82);
-    --border: #46a76d;
-    --text: #e9fff2;
-    --muted: #a8d9bb;
-    --title: #bfffd6;
-    --danger: #ff6666;
-    --warn: #ffcf5f;
-    --ok: #6fe9a2;
+    --bg-a: #082114;
+    --bg-b: #113622;
+    --panel: rgba(13, 35, 23, 0.92);
+    --panel-soft: rgba(16, 43, 29, 0.85);
+    --border: #48ab6f;
+    --text: #e8fff1;
+    --muted: #a7d8b8;
+    --title: #c9ffdf;
+    --danger: #ff6a6a;
+    --warn: #ffd46d;
+    --ok: #73eba8;
     --accent: #58c683;
   }
 
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
 
   body {
     margin: 0;
     color: var(--text);
     font-family: Inter, sans-serif;
-    background: radial-gradient(circle at 15% 10%, #194c2f 0%, transparent 35%),
-                radial-gradient(circle at 85% 80%, #0f3f25 0%, transparent 30%),
-                linear-gradient(145deg, var(--bg-a), var(--bg-b));
+    background:
+      radial-gradient(circle at 15% 10%, #1a5234 0%, transparent 36%),
+      radial-gradient(circle at 85% 80%, #0e4027 0%, transparent 31%),
+      linear-gradient(145deg, var(--bg-a), var(--bg-b));
     padding: 18px;
   }
 
-  h1, h2, h3 {
-    font-family: Orbitron, sans-serif;
-    color: var(--title);
-    letter-spacing: 0.7px;
-    text-shadow: 0 0 10px rgba(191, 255, 214, 0.45);
+  h1,
+  h2,
+  h3 {
     margin: 0;
+    color: var(--title);
+    font-family: Orbitron, sans-serif;
+    letter-spacing: 0.7px;
+    text-shadow: 0 0 11px rgba(201, 255, 223, 0.45);
   }
 
   h1 {
@@ -62,23 +67,30 @@
   .chip {
     border: 1px solid var(--border);
     color: var(--muted);
-    background: rgba(16, 40, 28, 0.8);
+    background: rgba(17, 42, 29, 0.8);
     border-radius: 999px;
     padding: 6px 12px;
     font-size: 0.85rem;
   }
 
   .btn {
-    background: #20583a;
+    background: #1f5a3b;
     color: var(--text);
-    border: 1px solid #6fda9e;
+    border: 1px solid #72dca1;
     border-radius: 10px;
     padding: 7px 12px;
     cursor: pointer;
     font-weight: 600;
   }
 
-  .btn:hover { filter: brightness(1.08); }
+  .btn:hover {
+    filter: brightness(1.09);
+  }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
   .grid {
     display: grid;
@@ -89,12 +101,22 @@
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   }
 
+  .chart-grid {
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    margin-top: 10px;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    margin-top: 14px;
+  }
+
   .panel {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 16px;
-    box-shadow: 0 0 16px rgba(70, 167, 109, 0.25);
+    box-shadow: 0 0 16px rgba(72, 171, 111, 0.25);
   }
 
   .panel h3 {
@@ -104,7 +126,7 @@
 
   .panel-soft {
     background: var(--panel-soft);
-    border: 1px solid rgba(111, 218, 158, 0.5);
+    border: 1px solid rgba(114, 220, 161, 0.5);
     border-radius: 12px;
     padding: 12px;
   }
@@ -113,11 +135,15 @@
     font-size: 1.9rem;
     font-weight: 700;
     margin: 6px 0;
-    color: #f0fff6;
+    color: #f1fff7;
   }
 
   .tiny {
     font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .muted {
     color: var(--muted);
   }
 
@@ -129,7 +155,10 @@
     font-size: 0.85rem;
   }
 
-  .toggle-row input { accent-color: var(--ok); }
+  .toggle-row input,
+  input[type="checkbox"] {
+    accent-color: var(--ok);
+  }
 
   table {
     width: 100%;
@@ -138,14 +167,18 @@
     font-size: 0.78rem;
   }
 
-  th, td {
-    border: 1px solid #5fbc85;
+  th,
+  td {
+    border: 1px solid #63c18a;
     padding: 5px 6px;
     color: #bdeccc;
     text-align: left;
   }
 
-  th { color: #d4ffe4; background: rgba(58, 142, 95, 0.28); }
+  th {
+    color: #d5ffe5;
+    background: rgba(58, 142, 95, 0.28);
+  }
 
   .ai-status {
     display: flex;
@@ -156,27 +189,37 @@
   }
 
   .score-pill {
-    font-size: 1.25rem;
+    font-size: 1.22rem;
     font-weight: 700;
     padding: 8px 14px;
     border-radius: 10px;
     border: 1px solid var(--border);
-    background: rgba(22, 56, 38, 0.9);
+    background: rgba(22, 57, 39, 0.9);
   }
 
-  .feature-grid {
-    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-    margin-top: 14px;
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
   }
 
-  .chart-grid {
-    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-    margin-top: 10px;
+  .kpi {
+    border: 1px solid #4f9f73;
+    background: rgba(19, 46, 31, 0.88);
+    border-radius: 10px;
+    padding: 8px;
   }
 
-  .chart-grid canvas {
-    height: 200px !important;
-    max-height: 200px;
+  .kpi .k {
+    font-size: 0.76rem;
+    color: #b5e7c7;
+  }
+
+  .kpi .v {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ecfff4;
   }
 
   canvas {
@@ -184,6 +227,11 @@
     background: rgba(8, 25, 16, 0.9);
     border-radius: 10px;
     border: 1px solid rgba(111, 218, 158, 0.4);
+  }
+
+  .chart-grid canvas {
+    height: 200px !important;
+    max-height: 200px;
   }
 
   .gauge-wrap {
@@ -224,7 +272,10 @@
     color: #e4fff0;
   }
 
-  .forecast-table td, .forecast-table th { text-align: center; }
+  .forecast-table td,
+  .forecast-table th {
+    text-align: center;
+  }
 
   #forecastRisk {
     display: block;
@@ -331,13 +382,16 @@
     cursor: pointer;
   }
 
-  .sim-grid {
+  .sim-grid,
+  .optimizer-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(120px, 1fr));
     gap: 8px;
   }
 
-  .sim-grid label {
+  .sim-grid label,
+  .optimizer-grid label,
+  .form-grid label {
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -346,19 +400,47 @@
     line-height: 1.2;
   }
 
-  input[type="range"] { width: 100%; accent-color: #7ee9ab; }
+  input[type="range"] {
+    width: 100%;
+    accent-color: #7ee9ab;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+    gap: 8px;
+  }
+
+  .form-grid input,
+  .chat-row input,
+  textarea {
+    width: 100%;
+    background: #0f2a1c;
+    border: 1px solid #4e9d73;
+    color: #e9fff2;
+    border-radius: 8px;
+    padding: 8px;
+  }
+
+  textarea {
+    min-height: 160px;
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.8rem;
+  }
+
+  .row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 
   .heatmap-wrap {
     display: flex;
     gap: 10px;
     align-items: flex-start;
     flex-wrap: wrap;
-  }
-
-  .heatmap-wrap > div {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
   }
 
   #heatmapCanvas {
@@ -376,8 +458,14 @@
     font-size: 0.88rem;
   }
 
-  .chat-msg { margin-bottom: 8px; }
-  .chat-msg b { color: #bfffd6; }
+  .chat-msg {
+    margin-bottom: 8px;
+  }
+
+  .chat-msg b {
+    color: #bfffd6;
+  }
+
   .chat-content.typing::after {
     content: "|";
     display: inline-block;
@@ -385,6 +473,7 @@
     color: #d5ffe6;
     animation: cursor-blink 0.9s steps(1) infinite;
   }
+
   @keyframes cursor-blink {
     0%, 45% { opacity: 1; }
     46%, 100% { opacity: 0; }
@@ -396,37 +485,33 @@
     margin-top: 8px;
   }
 
-  .chat-row input {
-    flex: 1;
-    background: #0f2a1c;
-    border: 1px solid #4e9d73;
-    color: #e9fff2;
-    border-radius: 8px;
-    padding: 8px;
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: #d9ffe8;
+    background: rgba(27, 71, 48, 0.65);
   }
 
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 8px;
-    margin-top: 8px;
-  }
+  @media (max-width: 900px) {
+    .feature-grid,
+    .chart-grid {
+      grid-template-columns: 1fr;
+    }
 
-  .kpi {
-    border: 1px solid #4f9f73;
-    background: rgba(19, 46, 31, 0.88);
-    border-radius: 10px;
-    padding: 8px;
-  }
+    .form-grid,
+    .optimizer-grid,
+    .sim-grid {
+      grid-template-columns: 1fr;
+    }
 
-  .kpi .k { font-size: 0.76rem; color: #b5e7c7; }
-  .kpi .v { font-size: 1.05rem; font-weight: 700; color: #ecfff4; }
-
-  .muted { color: var(--muted); }
-
-  @media (max-width: 720px) {
-    .chart-grid { grid-template-columns: 1fr; }
-    #heatmapCanvas { width: 100%; max-width: 320px; height: auto; }
+    #heatmapCanvas {
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+    }
   }
 </style>
 </head>
@@ -434,9 +519,9 @@
   <div class="topbar">
     <div>
       <h1>Rover AI Command Dashboard</h1>
-      <div class="tiny">Hydroponic suitability intelligence with forecasting, anomaly detection, digital twin, vision, and autonomous planning.</div>
+      <div class="tiny">Hydroponic suitability intelligence with forecasting, drift analytics, computer vision, optimization, and autonomous planning.</div>
     </div>
-    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <div class="row">
       <span class="chip" id="pollStatus">Polling: --</span>
       <span class="chip" id="sourceStatus">AI Source: --</span>
       <button class="btn" id="refreshBtn">Refresh Now</button>
@@ -448,37 +533,37 @@
       <h3>Ultrasonic (cm)</h3>
       <div class="value" id="ultrasonicValue">--</div>
       <label class="toggle-row"><input type="checkbox" id="toggleUltrasonic" checked> Stream on chart</label>
-      <table id="ultrasonicTable"><tr>
-<th>Time</th>
-<th>Value</th>
-</tr></table>
+      <table id="ultrasonicTable">
+        <tr><th>Time</th><th>Value</th></tr>
+      </table>
     </div>
+
     <div class="panel">
       <h3>Soil Moisture</h3>
       <div class="value" id="soilValue">--</div>
       <label class="toggle-row"><input type="checkbox" id="toggleSoil" checked> Stream on chart</label>
-      <table id="soilTable"><tr>
-<th>Time</th>
-<th>Value</th>
-</tr></table>
+      <table id="soilTable">
+        <tr><th>Time</th><th>Value</th></tr>
+      </table>
     </div>
+
     <div class="panel">
       <h3>Gas (MQ-135)</h3>
       <div class="value" id="gasValue">--</div>
       <label class="toggle-row"><input type="checkbox" id="toggleGas" checked> Stream on chart</label>
-      <table id="gasTable"><tr>
-<th>Time</th>
-<th>Value</th>
-</tr></table>
+      <table id="gasTable">
+        <tr><th>Time</th><th>Value</th></tr>
+      </table>
     </div>
+
     <div class="panel">
-      <h3>Temperature (&deg;C)</h3>
+      <h3>Temperature (°C)</h3>
       <div class="value" id="tempValue">--</div>
-      <table id="tempTable"><tr>
-<th>Time</th>
-<th>Value</th>
-</tr></table>
+      <table id="tempTable">
+        <tr><th>Time</th><th>Value</th></tr>
+      </table>
     </div>
+
     <div class="panel">
       <h3>Humidity Gauge</h3>
       <div class="gauge-wrap">
@@ -487,10 +572,9 @@
         </div>
         <div class="tiny" id="humidityCaption">Waiting for humidity data...</div>
       </div>
-      <table id="humTable"><tr>
-<th>Time</th>
-<th>Value</th>
-</tr></table>
+      <table id="humTable">
+        <tr><th>Time</th><th>Value</th></tr>
+      </table>
     </div>
   </div>
 
@@ -502,58 +586,62 @@
       </div>
       <div class="score-pill" id="aiScorePill">--</div>
     </div>
+
     <div class="kpi-grid">
-      <div class="kpi">
-<div class="k">Score</div>
-<div class="v" id="kpiScore">--</div>
-</div>
-      <div class="kpi">
-<div class="k">Class</div>
-<div class="v" id="kpiClass">--</div>
-</div>
-      <div class="kpi">
-<div class="k">Confidence</div>
-<div class="v" id="kpiConf">--</div>
-</div>
-      <div class="kpi">
-<div class="k">Last Update</div>
-<div class="v" id="kpiLast">--</div>
-</div>
+      <div class="kpi"><div class="k">Score</div><div class="v" id="kpiScore">--</div></div>
+      <div class="kpi"><div class="k">Class</div><div class="v" id="kpiClass">--</div></div>
+      <div class="kpi"><div class="k">Confidence</div><div class="v" id="kpiConf">--</div></div>
+      <div class="kpi"><div class="k">Last Update</div><div class="v" id="kpiLast">--</div></div>
+      <div class="kpi"><div class="k">Model Version</div><div class="v" id="modelVersionKpi">v1.0</div></div>
+      <div class="kpi"><div class="k">Weather Impact</div><div class="v" id="weatherImpactKpi">--</div></div>
     </div>
   </div>
 
   <div class="grid chart-grid" style="margin-top:14px;">
     <div class="panel">
-<h3>Ultrasonic Trend</h3>
-<canvas id="ultrasonicChart" height="200"></canvas>
-</div>
+      <h3>Ultrasonic Trend</h3>
+      <canvas id="ultrasonicChart" height="200"></canvas>
+    </div>
+
     <div class="panel">
-<h3>Soil Moisture Trend</h3>
-<canvas id="soilChart" height="200"></canvas>
-</div>
+      <h3>Soil Moisture Trend</h3>
+      <canvas id="soilChart" height="200"></canvas>
+    </div>
+
     <div class="panel">
-<h3>Gas Trend</h3>
-<canvas id="gasChart" height="200"></canvas>
-</div>
+      <h3>Gas Trend</h3>
+      <canvas id="gasChart" height="200"></canvas>
+    </div>
+
     <div class="panel">
-<h3>Temperature Bar Chart</h3>
-<canvas id="tempBarChart" height="200"></canvas>
-</div>
+      <h3>Temperature Bar Chart</h3>
+      <canvas id="tempBarChart" height="200"></canvas>
+    </div>
+
+    <div class="panel">
+      <h3>Forecast Uncertainty (Temperature)</h3>
+      <canvas id="forecastBandChart" height="200"></canvas>
+    </div>
   </div>
 
   <div class="grid feature-grid">
     <div class="panel">
       <h3>Forecasting (10m / 30m / 60m)</h3>
       <table class="forecast-table" id="forecastTable">
-        <tr>
-<th>Sensor</th>
-<th>Now</th>
-<th>+10m</th>
-<th>+30m</th>
-<th>+60m</th>
-</tr>
+        <tr><th>Sensor</th><th>Now</th><th>+10m</th><th>+30m</th><th>+60m</th></tr>
       </table>
       <div class="tiny" id="forecastRisk">Forecast risk: --</div>
+      <div class="tiny" id="forecastWeatherNote" style="margin-top:4px;">Weather fusion: waiting...</div>
+    </div>
+
+    <div class="panel">
+      <h3>Weather-Aware Context</h3>
+      <div class="row" style="margin-bottom:8px;">
+        <span class="badge" id="weatherTemp">Temp: --</span>
+        <span class="badge" id="weatherHum">Humidity: --</span>
+        <span class="badge" id="weatherWind">Wind: --</span>
+      </div>
+      <div class="tiny" id="weatherStatus">Weather integration inactive. Set WEATHER_LAT/WEATHER_LON to enable.</div>
     </div>
 
     <div class="panel">
@@ -562,8 +650,13 @@
     </div>
 
     <div class="panel">
-      <h3>Sensor Health &amp; Drift</h3>
+      <h3>Sensor Health & Drift</h3>
       <ul class="list" id="healthList"><li>Waiting for enough data...</li></ul>
+    </div>
+
+    <div class="panel">
+      <h3>Failure-Time Prediction (RUL)</h3>
+      <ul class="list" id="rulList"><li>Waiting for enough data to estimate remaining useful life.</li></ul>
     </div>
 
     <div class="panel">
@@ -579,11 +672,20 @@
 
     <div class="panel">
       <h3>Digital Twin (What-if Simulation)</h3>
+      <div class="tiny" style="margin-bottom:8px;">Informational only: this does not send any hardware command.</div>
       <div class="sim-grid">
-        <label>Temp delta (<span id="simTempVal">0</span>)<input id="simTemp" type="range" min="-10" max="10" value="0"></label>
-        <label>Humidity delta (<span id="simHumVal">0</span>)<input id="simHum" type="range" min="-25" max="25" value="0"></label>
-        <label>Soil delta (<span id="simSoilVal">0</span>)<input id="simSoil" type="range" min="-250" max="250" value="0"></label>
-        <label>Gas delta (<span id="simGasVal">0</span>)<input id="simGas" type="range" min="-150" max="150" value="0"></label>
+        <label>Temp delta (<span id="simTempVal">0</span>)
+          <input id="simTemp" type="range" min="-10" max="10" value="0">
+        </label>
+        <label>Humidity delta (<span id="simHumVal">0</span>)
+          <input id="simHum" type="range" min="-25" max="25" value="0">
+        </label>
+        <label>Soil delta (<span id="simSoilVal">0</span>)
+          <input id="simSoil" type="range" min="-250" max="250" value="0">
+        </label>
+        <label>Gas delta (<span id="simGasVal">0</span>)
+          <input id="simGas" type="range" min="-150" max="150" value="0">
+        </label>
       </div>
       <div class="panel-soft" style="margin-top:8px;">
         <div id="simResult">Simulation score: --</div>
@@ -591,64 +693,129 @@
     </div>
 
     <div class="panel">
-      <h3>Spatial Suitability Heatmap</h3>
+      <h3>Spatial Suitability Heatmap (IDW)</h3>
       <div class="heatmap-wrap">
         <canvas id="heatmapCanvas" width="320" height="320"></canvas>
         <div style="min-width:190px;">
           <div class="tiny" id="positionInfo">Position feed: waiting...</div>
           <div style="margin-top:8px;"><b>Next waypoint:</b></div>
           <div id="nextWaypoint" class="muted">--</div>
-          <div class="tiny" style="margin-top:8px;">Planner: explores least-sampled + highest-uncertainty cells.</div>
+          <div class="tiny" id="rlStatus" style="margin-top:8px;">RL planner: waiting for trajectory data.</div>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <h3>Vision Fusion (Leaf Stress)</h3>
+      <h3>Vision Fusion (Leaf Stress + Disease)</h3>
       <input type="file" id="visionInput" accept="image/*" class="btn" style="padding:6px;">
       <canvas id="visionCanvas" width="320" height="190" style="margin-top:8px;"></canvas>
-      <div class="tiny" id="visionResult">Upload an image to estimate greenness/stress index.</div>
+      <div class="tiny" id="visionResult">Upload an image to estimate stress and disease class probabilities.</div>
     </div>
 
     <div class="panel">
       <h3>Predictive Maintenance</h3>
       <div class="health-row">
-        <div class="health-label">
-<span>Pump Health</span><span id="pumpPct">--</span>
-</div>
+        <div class="health-label"><span>Pump Health</span><span id="pumpPct">--</span></div>
         <div class="bar"><span id="pumpBar"></span></div>
       </div>
       <div class="health-row">
-        <div class="health-label">
-<span>Fan Health</span><span id="fanPct">--</span>
-</div>
+        <div class="health-label"><span>Fan Health</span><span id="fanPct">--</span></div>
         <div class="bar"><span id="fanBar"></span></div>
       </div>
       <div class="health-row">
-        <div class="health-label">
-<span>Sensor Network Health</span><span id="sensorPct">--</span>
-</div>
+        <div class="health-label"><span>Sensor Network Health</span><span id="sensorPct">--</span></div>
         <div class="bar"><span id="sensorBar"></span></div>
       </div>
+    </div>
+
+    <div class="panel">
+      <h3>Multi-Objective Optimizer</h3>
+      <div class="optimizer-grid">
+        <label>Yield weight (<span id="optYieldVal">0.50</span>)
+          <input id="optYield" type="range" min="0" max="100" value="50">
+        </label>
+        <label>Water weight (<span id="optWaterVal">0.30</span>)
+          <input id="optWater" type="range" min="0" max="100" value="30">
+        </label>
+        <label>Energy weight (<span id="optEnergyVal">0.20</span>)
+          <input id="optEnergy" type="range" min="0" max="100" value="20">
+        </label>
+      </div>
+      <div class="panel-soft" style="margin-top:8px;">
+        <div id="optimizerResult">Best action: waiting for data...</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Model Retraining Pipeline</h3>
+      <div class="row" style="margin-bottom:8px;">
+        <span class="badge" id="datasetSize">Dataset: 0</span>
+        <span class="badge" id="modelVersion">Model: v1.0</span>
+        <span class="badge" id="lastTrain">Last train: --</span>
+      </div>
+      <div class="row">
+        <button class="btn" id="retrainBtn">Trigger Retrain</button>
+        <button class="btn" id="exportDatasetBtn">Export Dataset</button>
+      </div>
+      <div class="tiny" id="retrainStatus" style="margin-top:8px;">No retrain yet.</div>
+    </div>
+
+    <div class="panel">
+      <h3>Advanced Alerting</h3>
+      <div class="form-grid">
+        <label>DIA220327@diaestudents.com<input id="alertEmail" placeholder="name@example.com"></label>
+        <label>Telegram chat ID<input id="alertTelegram" placeholder="(optional) 123456789"></label>
+        <label>Webhook URL<input id="alertWebhook" placeholder="https://your-backend/alert"></label>
+        <label>Cooldown (min)<input id="alertCooldown" type="number" min="1" value="15"></label>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <button class="btn" id="testAlertBtn">Send Test Alert</button>
+        <button class="btn" id="clearAlertLogBtn">Clear Alert Log</button>
+      </div>
+      <div class="tiny" id="alertStatus" style="margin-top:8px;">No alerts dispatched yet.</div>
+      <ul class="list" id="alertLog" style="margin-top:8px;"></ul>
     </div>
 
     <div class="panel">
       <h3>AI Copilot Chat</h3>
       <div class="chat-box" id="chatBox"></div>
       <div class="chat-row">
-        <input id="chatInput" placeholder="Ask: status, forecast, actions, next waypoint, anomalies...">
+        <input id="chatInput" placeholder="Ask: status, forecast, actions, optimizer, alerts, retrain...">
         <button class="btn" id="chatSend">Send</button>
       </div>
+    </div>
+
+    <div class="panel">
+      <h3>Mission Report Generator</h3>
+      <div class="row" style="margin-bottom:8px;">
+        <button class="btn" id="generateReportBtn">Generate Report</button>
+        <button class="btn" id="downloadReportBtn">Download Report</button>
+      </div>
+      <textarea id="reportOutput" placeholder="Generated report appears here..."></textarea>
     </div>
   </div>
 
 <script>
 const THINGSPEAK_CHANNEL_ID = '3242443';
-const THINGSPEAK_READ_API_KEY = 'YOUR_THINGSPEAK_READ_API_KEY';
+const THINGSPEAK_READ_API_KEY = '831GMYH1YKBP9V1I';
 const POLL_INTERVAL_MS = 15000;
 const MAX_HISTORY = 120;
+const MAX_DATASET = 2000;
 
-const actionStats = JSON.parse(localStorage.getItem('ai_action_stats_v1') || '{}');
+const AI_INFERENCE_URL = 'http://localhost:3000/api/predict';
+const AI_VISION_URL = 'http://localhost:3000/api/vision-predict';
+const AI_RETRAIN_URL = 'http://localhost:3000/api/retrain';
+const ALERT_WEBHOOK_URL_DEFAULT = 'http://localhost:3000/api/alerts';
+const WEATHER_LAT = 25.23988;
+const WEATHER_LON = 55.29782;
+const EMAILJS_PUBLIC_KEY = 'N7Gt-66tLJpY2NgWg';
+const EMAILJS_SERVICE_ID = 'service_0upbkbd';
+const EMAILJS_TEMPLATE_ID = 'rover_alert_template';
+
+const actionStats = JSON.parse(localStorage.getItem('ai_action_stats_v2') || '{}');
+const storedDataset = JSON.parse(localStorage.getItem('ai_training_dataset_v1') || '[]');
+const storedModelMeta = JSON.parse(localStorage.getItem('ai_model_meta_v1') || '{"version":"1.0","bias":0,"lastTrain":"--"}');
+const storedAlertPrefs = JSON.parse(localStorage.getItem('ai_alert_prefs_v1') || '{}');
 
 const appState = {
   latest: {
@@ -664,20 +831,60 @@ const appState = {
     posY: NaN
   },
   history: {
-    t: [], distance: [], soil: [], gas: [], temp: [], hum: [], score: []
+    t: [],
+    distance: [],
+    soil: [],
+    gas: [],
+    temp: [],
+    hum: [],
+    score: []
   },
   anomalies: [],
   health: {},
+  rul: {},
   recommendations: [],
-  vision: { greenRatio: NaN, stress: 'unknown' },
+  vision: {
+    greenRatio: NaN,
+    stress: 'unknown',
+    classes: {}
+  },
+  weather: {
+    temp: NaN,
+    hum: NaN,
+    wind: NaN,
+    lastUpdate: 0,
+    status: 'Weather integration inactive. Set WEATHER_LAT/WEATHER_LON to enable.'
+  },
+  retrain: {
+    dataset: storedDataset,
+    model: storedModelMeta
+  },
+  alerts: {
+    lastByKey: {},
+    log: []
+  },
+  optimizer: {
+    bestAction: null,
+    utility: NaN,
+    weights: { yield: 0.5, water: 0.3, energy: 0.2 }
+  },
+  rl: {
+    q: {},
+    prevState: null,
+    prevAction: null,
+    alpha: 0.25,
+    gamma: 0.9,
+    epsilon: 0.2
+  },
   startMs: Date.now(),
-  sampleCount: 0,
-  heatmap: buildHeatmap(10)
+  heatmap: buildHeatmap(10),
+  samplePoints: []
 };
 
 let ultrasonicEnabled = true;
 let soilEnabled = true;
 let gasEnabled = true;
+let chatTyping = false;
 
 const el = {
   pollStatus: document.getElementById('pollStatus'),
@@ -704,11 +911,21 @@ const el = {
   kpiClass: document.getElementById('kpiClass'),
   kpiConf: document.getElementById('kpiConf'),
   kpiLast: document.getElementById('kpiLast'),
+  modelVersionKpi: document.getElementById('modelVersionKpi'),
+  weatherImpactKpi: document.getElementById('weatherImpactKpi'),
 
   forecastTable: document.getElementById('forecastTable'),
   forecastRisk: document.getElementById('forecastRisk'),
+  forecastWeatherNote: document.getElementById('forecastWeatherNote'),
+
+  weatherTemp: document.getElementById('weatherTemp'),
+  weatherHum: document.getElementById('weatherHum'),
+  weatherWind: document.getElementById('weatherWind'),
+  weatherStatus: document.getElementById('weatherStatus'),
+
   anomalyList: document.getElementById('anomalyList'),
   healthList: document.getElementById('healthList'),
+  rulList: document.getElementById('rulList'),
   contribBox: document.getElementById('contribBox'),
   recommendationsList: document.getElementById('recommendationsList'),
 
@@ -725,6 +942,7 @@ const el = {
   heatmapCanvas: document.getElementById('heatmapCanvas'),
   positionInfo: document.getElementById('positionInfo'),
   nextWaypoint: document.getElementById('nextWaypoint'),
+  rlStatus: document.getElementById('rlStatus'),
 
   visionInput: document.getElementById('visionInput'),
   visionCanvas: document.getElementById('visionCanvas'),
@@ -737,24 +955,89 @@ const el = {
   fanBar: document.getElementById('fanBar'),
   sensorBar: document.getElementById('sensorBar'),
 
+  optYield: document.getElementById('optYield'),
+  optWater: document.getElementById('optWater'),
+  optEnergy: document.getElementById('optEnergy'),
+  optYieldVal: document.getElementById('optYieldVal'),
+  optWaterVal: document.getElementById('optWaterVal'),
+  optEnergyVal: document.getElementById('optEnergyVal'),
+  optimizerResult: document.getElementById('optimizerResult'),
+
+  datasetSize: document.getElementById('datasetSize'),
+  modelVersion: document.getElementById('modelVersion'),
+  lastTrain: document.getElementById('lastTrain'),
+  retrainBtn: document.getElementById('retrainBtn'),
+  exportDatasetBtn: document.getElementById('exportDatasetBtn'),
+  retrainStatus: document.getElementById('retrainStatus'),
+
+  alertEmail: document.getElementById('alertEmail'),
+  alertTelegram: document.getElementById('alertTelegram'),
+  alertWebhook: document.getElementById('alertWebhook'),
+  alertCooldown: document.getElementById('alertCooldown'),
+  testAlertBtn: document.getElementById('testAlertBtn'),
+  clearAlertLogBtn: document.getElementById('clearAlertLogBtn'),
+  alertStatus: document.getElementById('alertStatus'),
+  alertLog: document.getElementById('alertLog'),
+
   chatBox: document.getElementById('chatBox'),
   chatInput: document.getElementById('chatInput'),
   chatSend: document.getElementById('chatSend'),
+
+  generateReportBtn: document.getElementById('generateReportBtn'),
+  downloadReportBtn: document.getElementById('downloadReportBtn'),
+  reportOutput: document.getElementById('reportOutput'),
 
   toggleUltrasonic: document.getElementById('toggleUltrasonic'),
   toggleSoil: document.getElementById('toggleSoil'),
   toggleGas: document.getElementById('toggleGas')
 };
 
-function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-function lastN(arr, n) { return arr.slice(Math.max(0, arr.length - n)); }
-function mean(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : NaN; }
+function clamp(v, lo, hi) {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+function nowLabel(ts = new Date()) {
+  return ts.toLocaleTimeString();
+}
+
+function lastN(arr, n) {
+  return arr.slice(Math.max(0, arr.length - n));
+}
+
+function mean(arr) {
+  return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : NaN;
+}
+
 function std(arr) {
   if (arr.length < 2) return 0;
   const m = mean(arr);
   return Math.sqrt(mean(arr.map(v => (v - m) ** 2)));
 }
-function nowLabel(ts = new Date()) { return ts.toLocaleTimeString(); }
+
+function fmt(v) {
+  return Number.isNaN(v) ? '--' : (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(1));
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function sanitizeDhtValue(v) {
+  return (Number.isNaN(v) || v <= -900) ? NaN : v;
+}
+
+function renderChatText(text) {
+  return escapeHtml(text).replaceAll('\n', '<br>');
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function addRow(tableEl, time, value) {
   const row = tableEl.insertRow(-1);
@@ -791,18 +1074,63 @@ function scoreRange(value, minGood, maxGood, hardMin, hardMax) {
   return (hardMax - value) / (hardMax - maxGood);
 }
 
+function getWeatherFusion() {
+  const w = appState.weather;
+  if (Number.isNaN(w.temp) || Number.isNaN(w.hum) || Number.isNaN(w.wind)) {
+    return {
+      scoreDelta: 0,
+      forecastTempDelta: 0,
+      forecastHumDelta: 0,
+      note: 'Weather fusion inactive (no external weather yet).'
+    };
+  }
+
+  let scoreDelta = 0;
+  let forecastTempDelta = 0;
+  let forecastHumDelta = 0;
+
+  if (w.temp > 34) {
+    scoreDelta -= 6;
+    forecastTempDelta += 1.5;
+  }
+  if (w.temp < 12) {
+    scoreDelta -= 5;
+    forecastTempDelta -= 1.2;
+  }
+  if (w.hum > 85) {
+    scoreDelta -= 4;
+    forecastHumDelta += 2.5;
+  }
+  if (w.wind > 30) {
+    scoreDelta -= 3;
+    forecastHumDelta -= 1;
+  }
+
+  return {
+    scoreDelta,
+    forecastTempDelta,
+    forecastHumDelta,
+    note: `Weather fusion active: ext temp ${fmt(w.temp)} degC, ext humidity ${fmt(w.hum)}%, wind ${fmt(w.wind)} km/h.`
+  };
+}
+
 function localPredictionWithExplain(s) {
+  const weather = getWeatherFusion();
+
   const parts = [
-    { name: 'Distance', raw: s.distance, score: scoreRange(s.distance, 15, 120, 5, 200), weight: 0.10 },
-    { name: 'Soil', raw: s.soil, score: scoreRange(s.soil, 350, 700, 200, 950), weight: 0.25 },
-    { name: 'Gas', raw: s.gas, score: scoreRange(s.gas, 0, 180, 0, 500), weight: 0.30 },
-    { name: 'Temp', raw: s.temp, score: scoreRange(s.temp, 18, 30, 10, 40), weight: 0.20 },
-    { name: 'Humidity', raw: s.hum, score: scoreRange(s.hum, 45, 75, 20, 95), weight: 0.15 }
+    { name: 'Distance', score: scoreRange(s.distance, 15, 120, 5, 200), weight: 0.10 },
+    { name: 'Soil', score: scoreRange(s.soil, 350, 700, 200, 950), weight: 0.25 },
+    { name: 'Gas', score: scoreRange(s.gas, 0, 180, 0, 500), weight: 0.30 },
+    { name: 'Temp', score: scoreRange(s.temp, 18, 30, 10, 40), weight: 0.20 },
+    { name: 'Humidity', score: scoreRange(s.hum, 45, 75, 20, 95), weight: 0.15 }
   ];
 
-  const weighted = parts.reduce((sum, p) => sum + p.score * p.weight, 0);
-  const score = Math.round(clamp(weighted, 0, 1) * 100);
-  const conf = clamp(0.55 + mean(parts.map(p => p.score)) * 0.45, 0.55, 1);
+  let weighted = parts.reduce((sum, p) => sum + p.score * p.weight, 0);
+  let score = Math.round(clamp(weighted, 0, 1) * 100);
+  score = clamp(Math.round(score + weather.scoreDelta + (appState.retrain.model.bias || 0)), 0, 100);
+
+  const meanScore = mean(parts.map(p => p.score));
+  const conf = clamp(0.5 + meanScore * 0.5, 0.5, 0.99);
   const cls = score >= 70 ? 1 : 0;
 
   const contributions = parts.map(p => ({
@@ -811,7 +1139,43 @@ function localPredictionWithExplain(s) {
     score: p.score
   }));
 
-  return { score, conf, cls, contributions };
+  if (weather.scoreDelta !== 0) {
+    contributions.push({
+      name: 'Weather',
+      points: Math.round(Math.abs(weather.scoreDelta)),
+      score: clamp(1 - Math.abs(weather.scoreDelta) / 10, 0, 1)
+    });
+  }
+
+  return {
+    score,
+    conf,
+    cls,
+    contributions,
+    weather
+  };
+}
+
+async function remotePredict(payload) {
+  if (!AI_INFERENCE_URL) return null;
+  try {
+    const res = await fetch(AI_INFERENCE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if ([data.score, data.classLabel, data.confidence].some(v => Number.isNaN(Number(v)))) return null;
+    return {
+      score: Number(data.score),
+      cls: Number(data.classLabel),
+      conf: Number(data.confidence),
+      contributions: Array.isArray(data.contributions) ? data.contributions : null
+    };
+  } catch {
+    return null;
+  }
 }
 
 function createLineChart(ctx, label, color, minSafe, maxSafe, maxY) {
@@ -840,7 +1204,7 @@ function createLineChart(ctx, label, color, minSafe, maxSafe, maxY) {
       maintainAspectRatio: false,
       plugins: {
         legend: { labels: { color: '#d9ffe8' } },
-        title: { display: true, text: label, color: '#bfffd6' }
+        title: { display: true, text: label, color: '#c9ffdf' }
       },
       scales: {
         y: { beginAtZero: true, max: maxY, ticks: { color: '#bdeecf' } },
@@ -867,7 +1231,7 @@ function createTempBarChart(ctx) {
       maintainAspectRatio: false,
       plugins: {
         legend: { labels: { color: '#d9ffe8' } },
-        title: { display: true, text: 'Temperature', color: '#bfffd6' }
+        title: { display: true, text: 'Temperature', color: '#c9ffdf' }
       },
       scales: {
         y: { beginAtZero: true, max: 50, ticks: { color: '#bdeecf' } },
@@ -877,11 +1241,60 @@ function createTempBarChart(ctx) {
   });
 }
 
+function createForecastBandChart(ctx) {
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Now', '+10m', '+30m', '+60m'],
+      datasets: [
+        {
+          label: 'Lower bound',
+          data: [NaN, NaN, NaN, NaN],
+          borderColor: 'rgba(0,0,0,0)',
+          pointRadius: 0,
+          tension: 0.2
+        },
+        {
+          label: 'Upper bound',
+          data: [NaN, NaN, NaN, NaN],
+          borderColor: 'rgba(0,0,0,0)',
+          backgroundColor: 'rgba(115,235,168,0.22)',
+          pointRadius: 0,
+          tension: 0.2,
+          fill: '-1'
+        },
+        {
+          label: 'Forecast mean',
+          data: [NaN, NaN, NaN, NaN],
+          borderColor: '#9ef7c6',
+          backgroundColor: 'rgba(158,247,198,0.2)',
+          pointRadius: 3,
+          tension: 0.2,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#d9ffe8' } },
+        title: { display: true, text: 'Temperature Forecast With Confidence Band', color: '#c9ffdf' }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 50, ticks: { color: '#bdeecf' } },
+        x: { ticks: { color: '#a6d8b8' } }
+      }
+    }
+  });
+}
+
 const charts = {
   ultrasonic: createLineChart(document.getElementById('ultrasonicChart').getContext('2d'), 'Ultrasonic Distance', '#74f2a9', 20, 1000, 1000),
   soil: createLineChart(document.getElementById('soilChart').getContext('2d'), 'Soil Moisture', '#6fdf9b', 300, 700, 1100),
   gas: createLineChart(document.getElementById('gasChart').getContext('2d'), 'Gas', '#d9c06a', 0, 200, 800),
-  tempBar: createTempBarChart(document.getElementById('tempBarChart').getContext('2d'))
+  tempBar: createTempBarChart(document.getElementById('tempBarChart').getContext('2d')),
+  forecastBand: createForecastBandChart(document.getElementById('forecastBandChart').getContext('2d'))
 };
 
 function updateChart(chart, label, value, maxPoints = 40) {
@@ -891,6 +1304,7 @@ function updateChart(chart, label, value, maxPoints = 40) {
     chart.data.labels.shift();
     chart.data.datasets[0].data.shift();
   }
+
   if (chart === charts.tempBar) {
     chart.data.datasets[0].backgroundColor = chart.data.datasets[0].data.map(v => {
       if (v > 32) return 'rgba(255, 108, 108, 0.82)';
@@ -898,6 +1312,7 @@ function updateChart(chart, label, value, maxPoints = 40) {
       return 'rgba(88, 198, 131, 0.84)';
     });
   }
+
   chart.update('none');
 }
 
@@ -913,8 +1328,14 @@ function updateHumidityGauge(h) {
   const angle = clamped * 3.6;
   let color = '#6fe9a2';
   let label = 'Optimal humidity';
-  if (clamped < 40) { color = '#ffd56d'; label = 'Low humidity'; }
-  else if (clamped > 80) { color = '#ff7777'; label = 'High humidity'; }
+
+  if (clamped < 40) {
+    color = '#ffd56d';
+    label = 'Low humidity';
+  } else if (clamped > 80) {
+    color = '#ff7777';
+    label = 'High humidity';
+  }
 
   el.humidityGauge.style.background = `conic-gradient(${color} ${angle}deg, rgba(255,255,255,0.14) ${angle}deg 360deg)`;
   el.humidityValue.innerText = `${clamped.toFixed(0)}%`;
@@ -925,17 +1346,72 @@ function linearForecast(values, stepsAhead) {
   if (values.length < 6) return NaN;
   const y = lastN(values, 24);
   const n = y.length;
-  let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumXX = 0;
+
   for (let i = 0; i < n; i++) {
     sumX += i;
     sumY += y[i];
     sumXY += i * y[i];
     sumXX += i * i;
   }
+
   const slope = (n * sumXY - sumX * sumY) / Math.max(1e-9, (n * sumXX - sumX * sumX));
   const intercept = (sumY - slope * sumX) / n;
-  const pred = slope * (n - 1 + stepsAhead) + intercept;
-  return pred;
+  return slope * (n - 1 + stepsAhead) + intercept;
+}
+
+function forecastWithUncertainty(values, stepsAhead) {
+  if (values.length < 8) {
+    return { mean: NaN, lower: NaN, upper: NaN, sigma: NaN };
+  }
+
+  const y = lastN(values, 30);
+  const n = y.length;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumXX = 0;
+
+  for (let i = 0; i < n; i++) {
+    sumX += i;
+    sumY += y[i];
+    sumXY += i * y[i];
+    sumXX += i * i;
+  }
+
+  const slope = (n * sumXY - sumX * sumY) / Math.max(1e-9, (n * sumXX - sumX * sumX));
+  const intercept = (sumY - slope * sumX) / n;
+
+  const residuals = [];
+  for (let i = 0; i < n; i++) {
+    const pred = slope * i + intercept;
+    residuals.push(y[i] - pred);
+  }
+
+  const sigma = Math.max(0.5, std(residuals));
+  const meanPred = slope * (n - 1 + stepsAhead) + intercept;
+  const unc = sigma * Math.sqrt(1 + stepsAhead / Math.max(1, n));
+
+  return {
+    mean: meanPred,
+    lower: meanPred - 1.96 * unc,
+    upper: meanPred + 1.96 * unc,
+    sigma
+  };
+}
+
+function updateForecastBandChart(nowTemp, f10, f30, f60) {
+  const meanVals = [nowTemp, f10.mean, f30.mean, f60.mean];
+  const lowerVals = [nowTemp, f10.lower, f30.lower, f60.lower];
+  const upperVals = [nowTemp, f10.upper, f30.upper, f60.upper];
+
+  charts.forecastBand.data.datasets[0].data = lowerVals;
+  charts.forecastBand.data.datasets[1].data = upperVals;
+  charts.forecastBand.data.datasets[2].data = meanVals;
+  charts.forecastBand.update('none');
 }
 
 function renderForecasts() {
@@ -943,27 +1419,56 @@ function renderForecasts() {
   const steps30 = Math.round((30 * 60) / (POLL_INTERVAL_MS / 1000));
   const steps60 = Math.round((60 * 60) / (POLL_INTERVAL_MS / 1000));
 
+  const weatherFusion = getWeatherFusion();
+
+  const temp10 = linearForecast(appState.history.temp, steps10) + weatherFusion.forecastTempDelta;
+  const temp30 = linearForecast(appState.history.temp, steps30) + weatherFusion.forecastTempDelta;
+  const temp60 = linearForecast(appState.history.temp, steps60) + weatherFusion.forecastTempDelta;
+
+  const hum10 = linearForecast(appState.history.hum, steps10) + weatherFusion.forecastHumDelta;
+  const hum30 = linearForecast(appState.history.hum, steps30) + weatherFusion.forecastHumDelta;
+  const hum60 = linearForecast(appState.history.hum, steps60) + weatherFusion.forecastHumDelta;
+
+  const gas10 = linearForecast(appState.history.gas, steps10);
+  const gas30 = linearForecast(appState.history.gas, steps30);
+  const gas60 = linearForecast(appState.history.gas, steps60);
+
+  const soil10 = linearForecast(appState.history.soil, steps10);
+  const soil30 = linearForecast(appState.history.soil, steps30);
+  const soil60 = linearForecast(appState.history.soil, steps60);
+
   const rows = [
-    ['Temp', appState.latest.temp, linearForecast(appState.history.temp, steps10), linearForecast(appState.history.temp, steps30), linearForecast(appState.history.temp, steps60)],
-    ['Humidity', appState.latest.hum, linearForecast(appState.history.hum, steps10), linearForecast(appState.history.hum, steps30), linearForecast(appState.history.hum, steps60)],
-    ['Gas', appState.latest.gas, linearForecast(appState.history.gas, steps10), linearForecast(appState.history.gas, steps30), linearForecast(appState.history.gas, steps60)],
-    ['Soil', appState.latest.soil, linearForecast(appState.history.soil, steps10), linearForecast(appState.history.soil, steps30), linearForecast(appState.history.soil, steps60)]
+    ['Temp', appState.latest.temp, temp10, temp30, temp60],
+    ['Humidity', appState.latest.hum, hum10, hum30, hum60],
+    ['Gas', appState.latest.gas, gas10, gas30, gas60],
+    ['Soil', appState.latest.soil, soil10, soil30, soil60]
   ];
 
-  let html = '<tr><th>Sensor<th>Now<th>+10m<th>+30m<th>+60m';
+  let html = '<tr><th>Sensor</th><th>Now</th><th>+10m</th><th>+30m</th><th>+60m</th></tr>';
   for (const r of rows) {
-    html += `<tr><td>${r[0]}<td>${fmt(r[1])}<td>${fmt(r[2])}<td>${fmt(r[3])}<td>${fmt(r[4])}`;
+    html += `<tr><td>${r[0]}</td><td>${fmt(r[1])}</td><td>${fmt(r[2])}</td><td>${fmt(r[3])}</td><td>${fmt(r[4])}</td></tr>`;
   }
   el.forecastTable.innerHTML = html;
 
   let risk = 'Low';
-  const fTemp = rows[0][4], fHum = rows[1][4], fGas = rows[2][4];
-  if ((!Number.isNaN(fTemp) && (fTemp > 34 || fTemp < 14)) || (!Number.isNaN(fHum) && (fHum < 35 || fHum > 85)) || (!Number.isNaN(fGas) && fGas > 240)) {
+  if ((temp60 > 34 || temp60 < 14) || (hum60 < 35 || hum60 > 85) || gas60 > 240) {
     risk = 'High';
-  } else if ((!Number.isNaN(fTemp) && (fTemp > 31 || fTemp < 16)) || (!Number.isNaN(fHum) && (fHum < 42 || fHum > 78)) || (!Number.isNaN(fGas) && fGas > 200)) {
+  } else if ((temp60 > 31 || temp60 < 16) || (hum60 < 42 || hum60 > 78) || gas60 > 200) {
     risk = 'Medium';
   }
   el.forecastRisk.innerText = `Forecast risk: ${risk}`;
+  el.forecastWeatherNote.innerText = weatherFusion.note;
+
+  const f10 = forecastWithUncertainty(appState.history.temp, steps10);
+  const f30 = forecastWithUncertainty(appState.history.temp, steps30);
+  const f60 = forecastWithUncertainty(appState.history.temp, steps60);
+  updateForecastBandChart(appState.latest.temp, f10, f30, f60);
+
+  return {
+    risk,
+    rows,
+    tempBand: { f10, f30, f60 }
+  };
 }
 
 function detectAnomalies() {
@@ -976,31 +1481,59 @@ function detectAnomalies() {
   ];
 
   const t = nowLabel();
+
   for (const c of checks) {
     const arr = c.arr;
     if (arr.length < 8) continue;
+
     const recent = lastN(arr, 8);
     const curr = recent[recent.length - 1];
     const prev = recent[recent.length - 2];
     const base = recent.slice(0, -1);
+
     const m = mean(base);
     const s = std(base);
     const z = s > 0 ? Math.abs((curr - m) / s) : 0;
 
     if (z > 2.5 || Math.abs(curr - prev) > c.jump) {
       const msg = `${t}: ${c.name} anomaly (value ${fmt(curr)}, z=${z.toFixed(2)})`;
-      if (!appState.anomalies.length || appState.anomalies[0] !== msg) {
-        appState.anomalies.unshift(msg);
-      }
+      if (!appState.anomalies.length || appState.anomalies[0] !== msg) appState.anomalies.unshift(msg);
     }
   }
 
-  appState.anomalies = appState.anomalies.slice(0, 10);
-  if (!appState.anomalies.length) {
-    el.anomalyList.innerHTML = '<li>No anomalies yet.';
-  } else {
-    el.anomalyList.innerHTML = appState.anomalies.map(a => `<li>${a}`).join('');
+  const multi = multivariateAnomalyScore();
+  if (multi.flag) {
+    const m = `${t}: Multivariate anomaly (joint score ${multi.score.toFixed(2)}).`;
+    if (!appState.anomalies.length || appState.anomalies[0] !== m) appState.anomalies.unshift(m);
   }
+
+  appState.anomalies = appState.anomalies.slice(0, 10);
+
+  if (!appState.anomalies.length) {
+    el.anomalyList.innerHTML = '<li>No anomalies yet.</li>';
+  } else {
+    el.anomalyList.innerHTML = appState.anomalies.map(a => `<li>${a}</li>`).join('');
+  }
+
+  return multi;
+}
+
+function multivariateAnomalyScore() {
+  const keys = ['distance', 'soil', 'gas', 'temp', 'hum'];
+  const vals = [];
+
+  for (const k of keys) {
+    const arr = appState.history[k];
+    if (arr.length < 16) return { score: 0, flag: false };
+    const hist = lastN(arr, 16);
+    const m = mean(hist.slice(0, -1));
+    const s = Math.max(1e-6, std(hist.slice(0, -1)));
+    const z = (hist[hist.length - 1] - m) / s;
+    vals.push(z);
+  }
+
+  const score = Math.sqrt(vals.reduce((sum, z) => sum + z * z, 0));
+  return { score, flag: score > 4.5 };
 }
 
 function evaluateSensorHealth() {
@@ -1013,15 +1546,19 @@ function evaluateSensorHealth() {
   };
 
   const statuses = {};
+  const rul = {};
+
   for (const key of Object.keys(specs)) {
     const arr = appState.history[key];
     if (arr.length < 12) {
       statuses[key] = 'Learning';
+      rul[key] = NaN;
       continue;
     }
 
     const s = specs[key];
     const recent = lastN(arr, 12);
+
     const stuck = recent.every(v => Math.abs(v - recent[0]) <= s.eps);
     const noisy = std(recent) > s.noisy;
     const first = mean(recent.slice(0, 6));
@@ -1031,33 +1568,47 @@ function evaluateSensorHealth() {
     let level = 'Good';
     if (stuck || noisy || drift) level = 'Fair';
     if ((stuck && noisy) || (stuck && drift) || (noisy && drift)) level = 'Poor';
+
     statuses[key] = `${level}${stuck ? ' | Stuck' : ''}${noisy ? ' | Noisy' : ''}${drift ? ' | Drift' : ''}`;
+
+    const degrade = clamp((stuck ? 0.45 : 0) + (noisy ? 0.35 : 0) + (drift ? 0.35 : 0), 0, 1);
+    const baseHours = 180;
+    const hours = clamp(baseHours * (1 - degrade) + 8, 6, 240);
+    rul[key] = hours;
   }
 
   appState.health = statuses;
+  appState.rul = rul;
+
   el.healthList.innerHTML = Object.entries(statuses)
-    .map(([k, v]) => `<li><b>${k.toUpperCase()}: ${v}`)
+    .map(([k, v]) => `<li><b>${k.toUpperCase()}:</b> ${v}</li>`)
+    .join('');
+
+  el.rulList.innerHTML = Object.entries(rul)
+    .map(([k, h]) => `<li><b>${k.toUpperCase()}:</b> ${Number.isNaN(h) ? 'Learning' : `${h.toFixed(0)}h remaining (estimated)`}</li>`)
     .join('');
 }
 
 function renderContributions(contrib) {
   if (!contrib || !contrib.length) {
-    el.contribBox.innerHTML = '<div class="tiny">No explainability data yet.';
+    el.contribBox.innerHTML = '<div class="tiny">No explainability data yet.</div>';
     return;
   }
 
   const maxPoints = Math.max(1, ...contrib.map(c => c.points));
   let html = '';
+
   for (const c of contrib) {
     const pct = Math.round((c.points / maxPoints) * 100);
     html += `
       <div class="contrib-row">
-        <div>${c.name}
-        <div class="contrib-track"><div class="contrib-fill" style="width:${pct}%">
-        <div>${c.points}
-      
+        <div>${c.name}</div>
+        <div class="contrib-track"><div class="contrib-fill" style="width:${pct}%"></div></div>
+        <div>${c.points}</div>
+      </div>
     `;
   }
+
   el.contribBox.innerHTML = html;
 }
 
@@ -1072,25 +1623,28 @@ function voteAction(text, vote) {
   if (!actionStats[text]) actionStats[text] = { up: 0, down: 0 };
   if (vote === 'up') actionStats[text].up += 1;
   if (vote === 'down') actionStats[text].down += 1;
-  localStorage.setItem('ai_action_stats_v1', JSON.stringify(actionStats));
+  localStorage.setItem('ai_action_stats_v2', JSON.stringify(actionStats));
 }
 
 function buildRecommendations(model) {
   const s = appState.latest;
   const rec = [];
 
-  if (appState.anomalies.length) rec.push('Inspect anomalous sensors immediately and validate readings before acting.');
+  if (appState.anomalies.length) rec.push('Validate anomalous sensors immediately before making control changes.');
   if (s.soil < 330) rec.push('Increase irrigation flow by 5-10% to prevent root-zone dryness.');
   if (s.soil > 780) rec.push('Reduce irrigation interval and improve drainage to avoid oversaturation.');
   if (s.gas > 220) rec.push('Boost ventilation now and inspect nearby sources of gas buildup.');
-  if (s.temp > 32) rec.push('Apply cooling or shade immediately; target 18-30 &deg;C.');
+  if (s.temp > 32) rec.push('Apply cooling or shade immediately; target 18-30 degC.');
   if (s.temp < 16) rec.push('Raise ambient temperature to protect nutrient uptake rate.');
   if (s.hum < 40) rec.push('Increase humidity gradually (mist/humidifier) to reduce water stress.');
-  if (s.hum > 80) rec.push('Decrease humidity and raise airflow to prevent fungal growth.');
+  if (s.hum > 80) rec.push('Decrease humidity and increase airflow to prevent fungal growth.');
   if (s.distance < 20) rec.push('Obstacle is near rover path; reposition before next scan cycle.');
-  if (model.score >= 85) rec.push('Keep current parameters; verify stability every 15 minutes.');
-  if (appState.vision.stress === 'high') rec.push('Vision detects low greenness; inspect leaves for nutrient imbalance signs.');
-  if (appState.health.gas && appState.health.gas.includes('Poor')) rec.push('Gas sensor quality is poor; calibrate or replace before trusting air-quality decisions.');
+  if (model.score >= 85) rec.push('Keep current parameters and verify stability every 15 minutes.');
+  if (appState.vision.stress === 'high') rec.push('Vision indicates high leaf stress; inspect nutrient balance and disease symptoms.');
+
+  if (appState.optimizer.bestAction) {
+    rec.push(`Optimizer suggests: ${appState.optimizer.bestAction.name} (utility ${appState.optimizer.utility.toFixed(2)}).`);
+  }
 
   if (!rec.length) rec.push('Conditions stable. Continue monitoring and collect more labeled outcomes for model improvement.');
 
@@ -1100,12 +1654,12 @@ function buildRecommendations(model) {
 
   el.recommendationsList.innerHTML = appState.recommendations.map(text => `
     <li class="rec-item">
-      <div>${text}
+      <div>${text}</div>
       <div class="rec-actions">
-        <button class="rec-btn" data-vote="up" data-action="${escapeHtml(text)}">Upvote
-        <button class="rec-btn" data-vote="down" data-action="${escapeHtml(text)}">Downvote
-      
-    
+        <button class="rec-btn" data-vote="up" data-action="${escapeHtml(text)}">Upvote</button>
+        <button class="rec-btn" data-vote="down" data-action="${escapeHtml(text)}">Downvote</button>
+      </div>
+    </li>
   `).join('');
 }
 
@@ -1126,7 +1680,7 @@ function renderSimulation() {
   el.simSoilVal.innerText = dSoil;
   el.simGasVal.innerText = dGas;
 
-  const sim = {
+  const twin = {
     distance: s.distance,
     soil: s.soil + dSoil,
     gas: s.gas + dGas,
@@ -1134,14 +1688,14 @@ function renderSimulation() {
     hum: s.hum + dHum
   };
 
-  const out = localPredictionWithExplain(sim);
+  const out = localPredictionWithExplain(twin);
   const cls = out.cls === 1 ? 'Suitable' : 'Not Suitable';
   const top = [...out.contributions].sort((a, b) => b.points - a.points)[0];
   el.simResult.innerText = `Simulation score: ${out.score}/100 (${cls}), confidence ${out.conf.toFixed(2)}. Top factor: ${top.name}.`;
 }
 
 function heatColor(score) {
-  if (Number.isNaN(score)) return 'rgba(40,70,50,0.9)';
+  if (Number.isNaN(score)) return 'rgba(35,72,50,0.9)';
   const hue = clamp((score / 100) * 120, 0, 120);
   return `hsl(${hue}, 70%, 45%)`;
 }
@@ -1153,6 +1707,44 @@ function addHeatSample(x, y, score) {
   const cell = appState.heatmap.grid[gy][gx];
   cell.count += 1;
   cell.sum += score;
+
+  appState.samplePoints.push({
+    x: clamp(x, 0, 100),
+    y: clamp(y, 0, 100),
+    score,
+    t: Date.now()
+  });
+
+  if (appState.samplePoints.length > 220) appState.samplePoints.shift();
+}
+
+function idwEstimateScore(xPct, yPct, power = 2) {
+  const pts = appState.samplePoints;
+  if (!pts.length) return NaN;
+
+  let num = 0;
+  let den = 0;
+
+  for (const p of pts) {
+    const dx = xPct - p.x;
+    const dy = yPct - p.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const w = 1 / (Math.pow(dist + 0.001, power));
+    num += w * p.score;
+    den += w;
+  }
+
+  return den > 0 ? num / den : NaN;
+}
+
+function cellUncertaintyIdw(xPct, yPct) {
+  if (appState.samplePoints.length < 3) return 999;
+  const nearest = [...appState.samplePoints]
+    .map(p => ({ d: Math.hypot(xPct - p.x, yPct - p.y) }))
+    .sort((a, b) => a.d - b.d)
+    .slice(0, 5)
+    .map(v => v.d);
+  return mean(nearest);
 }
 
 function drawHeatmap() {
@@ -1163,11 +1755,13 @@ function drawHeatmap() {
   const cellH = canvas.height / size;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
-      const c = appState.heatmap.grid[y][x];
-      const avg = c.count ? c.sum / c.count : NaN;
-      ctx.fillStyle = heatColor(avg);
+      const xPct = ((x + 0.5) / size) * 100;
+      const yPct = ((y + 0.5) / size) * 100;
+      const estimate = idwEstimateScore(xPct, yPct);
+      ctx.fillStyle = heatColor(estimate);
       ctx.fillRect(x * cellW, y * cellH, cellW, cellH);
       ctx.strokeStyle = 'rgba(170,255,210,0.15)';
       ctx.strokeRect(x * cellW, y * cellH, cellW, cellH);
@@ -1175,39 +1769,89 @@ function drawHeatmap() {
   }
 }
 
-function cellUncertainty(x, y) {
-  const g = appState.heatmap.grid;
-  const size = appState.heatmap.size;
-  const scores = [];
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      const ny = y + dy;
-      const nx = x + dx;
-      if (ny < 0 || nx < 0 || ny >= size || nx >= size) continue;
-      const c = g[ny][nx];
-      if (c.count) scores.push(c.sum / c.count);
-    }
-  }
-  return scores.length >= 2 ? std(scores) : 999;
+function rlGetQ(stateKey) {
+  if (!appState.rl.q[stateKey]) appState.rl.q[stateKey] = [0, 0, 0, 0];
+  return appState.rl.q[stateKey];
 }
 
-function suggestNextWaypoint() {
+function stateFromPos(xPct, yPct) {
   const size = appState.heatmap.size;
-  let best = null;
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const cell = appState.heatmap.grid[y][x];
-      const unc = cellUncertainty(x, y);
-      const score = { x, y, count: cell.count, unc };
-      if (!best) best = score;
-      else if (score.count < best.count || (score.count === best.count && score.unc > best.unc)) best = score;
+  const x = clamp(Math.floor((xPct / 100) * size), 0, size - 1);
+  const y = clamp(Math.floor((yPct / 100) * size), 0, size - 1);
+  return { x, y, key: `${x},${y}` };
+}
+
+function chooseRlAction(state) {
+  const actions = [
+    { name: 'UP', dx: 0, dy: -1 },
+    { name: 'RIGHT', dx: 1, dy: 0 },
+    { name: 'DOWN', dx: 0, dy: 1 },
+    { name: 'LEFT', dx: -1, dy: 0 }
+  ];
+
+  const q = rlGetQ(state.key);
+  const explore = Math.random() < appState.rl.epsilon;
+
+  let idx = 0;
+  if (explore) {
+    idx = Math.floor(Math.random() * actions.length);
+  } else {
+    let best = -Infinity;
+    for (let i = 0; i < q.length; i++) {
+      if (q[i] > best) {
+        best = q[i];
+        idx = i;
+      }
     }
   }
-  if (!best) return null;
 
-  const xPct = Math.round(((best.x + 0.5) / size) * 100);
-  const yPct = Math.round(((best.y + 0.5) / size) * 100);
-  return { xPct, yPct, reason: `least sampled=${best.count}, uncertainty=${best.unc.toFixed(1)}` };
+  const picked = actions[idx];
+  const size = appState.heatmap.size;
+  const nx = clamp(state.x + picked.dx, 0, size - 1);
+  const ny = clamp(state.y + picked.dy, 0, size - 1);
+  const wp = {
+    xPct: Math.round(((nx + 0.5) / size) * 100),
+    yPct: Math.round(((ny + 0.5) / size) * 100)
+  };
+
+  return { idx, action: picked, nextState: { x: nx, y: ny, key: `${nx},${ny}` }, wp };
+}
+
+function updateQ(prevStateKey, actionIdx, reward, nextStateKey) {
+  const qPrev = rlGetQ(prevStateKey);
+  const qNext = rlGetQ(nextStateKey);
+  const oldVal = qPrev[actionIdx];
+  const tdTarget = reward + appState.rl.gamma * Math.max(...qNext);
+  qPrev[actionIdx] = oldVal + appState.rl.alpha * (tdTarget - oldVal);
+}
+
+function suggestNextWaypointRl(xPct, yPct, reward) {
+  const state = stateFromPos(xPct, yPct);
+
+  if (appState.rl.prevState && appState.rl.prevAction !== null) {
+    updateQ(appState.rl.prevState, appState.rl.prevAction, reward, state.key);
+  }
+
+  const pick = chooseRlAction(state);
+  appState.rl.prevState = state.key;
+  appState.rl.prevAction = pick.idx;
+
+  const unc = cellUncertaintyIdw(pick.wp.xPct, pick.wp.yPct);
+  const exploreBoost = unc > 10 ? 'high-uncertainty exploration' : 'policy exploitation';
+  const qVal = rlGetQ(state.key)[pick.idx];
+
+  el.rlStatus.innerText = `RL action: ${pick.action.name}, Q=${qVal.toFixed(2)}, mode=${exploreBoost}.`;
+
+  return {
+    xPct: pick.wp.xPct,
+    yPct: pick.wp.yPct,
+    reason: `${pick.action.name} via RL policy, uncertainty=${unc.toFixed(1)}`
+  };
+}
+
+function renderHealthBar(barEl, pctEl, value) {
+  barEl.style.width = `${value.toFixed(0)}%`;
+  pctEl.innerText = `${value.toFixed(0)}%`;
 }
 
 function updateMaintenance() {
@@ -1227,21 +1871,314 @@ function updateMaintenance() {
   renderHealthBar(el.sensorBar, el.sensorPct, sensor);
 }
 
-function renderHealthBar(barEl, pctEl, value) {
-  barEl.style.width = `${value.toFixed(0)}%`;
-  pctEl.innerText = `${value.toFixed(0)}%`;
+function normalizeWeights(yieldW, waterW, energyW) {
+  const sum = Math.max(1, yieldW + waterW + energyW);
+  return {
+    yield: yieldW / sum,
+    water: waterW / sum,
+    energy: energyW / sum
+  };
 }
 
-let chatTyping = false;
+function evaluateOptimizer() {
+  const wy = Number(el.optYield.value);
+  const ww = Number(el.optWater.value);
+  const we = Number(el.optEnergy.value);
+  const w = normalizeWeights(wy, ww, we);
 
-function renderChatText(text) {
-  return escapeHtml(text).replaceAll('\n', '<br>');
+  appState.optimizer.weights = w;
+
+  el.optYieldVal.innerText = w.yield.toFixed(2);
+  el.optWaterVal.innerText = w.water.toFixed(2);
+  el.optEnergyVal.innerText = w.energy.toFixed(2);
+
+  const candidates = [
+    { name: 'Balanced irrigation boost', yieldGain: 0.32, waterUse: 0.45, energyUse: 0.2, risk: 0.15, ctrl: { pump: 70, fan: 45, mist: 35 } },
+    { name: 'Ventilation-focused cooling', yieldGain: 0.28, waterUse: 0.15, energyUse: 0.62, risk: 0.12, ctrl: { pump: 35, fan: 85, mist: 10 } },
+    { name: 'Humidity stabilization', yieldGain: 0.25, waterUse: 0.4, energyUse: 0.35, risk: 0.1, ctrl: { pump: 45, fan: 60, mist: 55 } },
+    { name: 'Water-saving conservative mode', yieldGain: 0.18, waterUse: 0.12, energyUse: 0.2, risk: 0.22, ctrl: { pump: 25, fan: 35, mist: 20 } }
+  ];
+
+  let best = null;
+  for (const c of candidates) {
+    const utility = (w.yield * c.yieldGain) - (w.water * c.waterUse) - (w.energy * c.energyUse) - (0.25 * c.risk);
+    if (!best || utility > best.utility) best = { ...c, utility };
+  }
+
+  appState.optimizer.bestAction = best;
+  appState.optimizer.utility = best.utility;
+
+  el.optimizerResult.innerText = `Best action: ${best.name} | utility ${best.utility.toFixed(2)} | pump ${best.ctrl.pump}%, fan ${best.ctrl.fan}%, mist ${best.ctrl.mist}%`;
+}
+
+function appendTrainingSample(ts) {
+  const s = appState.latest;
+  if ([s.distance, s.soil, s.gas, s.temp, s.hum, s.aiScore, s.aiClass].some(Number.isNaN)) return;
+
+  appState.retrain.dataset.push({
+    ts: ts.toISOString(),
+    distance: s.distance,
+    soil: s.soil,
+    gas: s.gas,
+    temp: s.temp,
+    hum: s.hum,
+    weatherTemp: appState.weather.temp,
+    weatherHum: appState.weather.hum,
+    weatherWind: appState.weather.wind,
+    labelScore: s.aiScore,
+    labelClass: s.aiClass
+  });
+
+  if (appState.retrain.dataset.length > MAX_DATASET) {
+    appState.retrain.dataset.splice(0, appState.retrain.dataset.length - MAX_DATASET);
+  }
+
+  localStorage.setItem('ai_training_dataset_v1', JSON.stringify(appState.retrain.dataset));
+  el.datasetSize.innerText = `Dataset: ${appState.retrain.dataset.length}`;
+}
+
+function updateModelBadges() {
+  const version = `v${appState.retrain.model.version || '1.0'}`;
+  el.modelVersion.innerText = `Model: ${version}`;
+  el.modelVersionKpi.innerText = version;
+  el.lastTrain.innerText = `Last train: ${appState.retrain.model.lastTrain || '--'}`;
+}
+
+async function triggerRetrain() {
+  const ds = appState.retrain.dataset;
+  if (ds.length < 25) {
+    el.retrainStatus.innerText = 'Retrain skipped: need at least 25 samples.';
+    return;
+  }
+  if (!AI_RETRAIN_URL) {
+    el.retrainStatus.innerText = 'Retrain endpoint not configured. Set AI_RETRAIN_URL to run real retraining.';
+    return;
+  }
+
+  try {
+    const res = await fetch(AI_RETRAIN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ samples: ds })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const out = await res.json();
+    appState.retrain.model.version = String(out.version || (Number(appState.retrain.model.version || 1) + 0.1).toFixed(1));
+    appState.retrain.model.bias = Number(out.bias || appState.retrain.model.bias || 0);
+    appState.retrain.model.lastTrain = new Date().toLocaleString();
+    localStorage.setItem('ai_model_meta_v1', JSON.stringify(appState.retrain.model));
+    updateModelBadges();
+    el.retrainStatus.innerText = `Retrain complete via remote pipeline. New version v${appState.retrain.model.version}.`;
+  } catch (err) {
+    el.retrainStatus.innerText = `Remote retrain failed: ${err.message}`;
+  }
+}
+
+function downloadDataset() {
+  const blob = new Blob([JSON.stringify(appState.retrain.dataset, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `rover_dataset_${new Date().toISOString().slice(0, 19).replaceAll(':', '-')}.json`;
+  document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(a.href);
+  a.remove();
+}
+
+function loadAlertPrefs() {
+  el.alertEmail.value = storedAlertPrefs.email || '';
+  el.alertTelegram.value = storedAlertPrefs.telegram || '';
+  el.alertWebhook.value = storedAlertPrefs.webhook || ALERT_WEBHOOK_URL_DEFAULT || '';
+  el.alertCooldown.value = storedAlertPrefs.cooldown || 15;
+}
+
+function saveAlertPrefs() {
+  const p = {
+    email: el.alertEmail.value.trim(),
+    telegram: el.alertTelegram.value.trim(),
+    webhook: el.alertWebhook.value.trim(),
+    cooldown: Number(el.alertCooldown.value) || 15
+  };
+  localStorage.setItem('ai_alert_prefs_v1', JSON.stringify(p));
+  return p;
+}
+
+function pushAlertLog(text) {
+  appState.alerts.log.unshift(`${nowLabel()}: ${text}`);
+  appState.alerts.log = appState.alerts.log.slice(0, 8);
+  el.alertLog.innerHTML = appState.alerts.log.map(v => `<li>${escapeHtml(v)}</li>`).join('');
+}
+
+function emailJsConfigured() {
+  const looksReal = v => Boolean(v) && !String(v).startsWith('YOUR_');
+  return Boolean(
+    looksReal(EMAILJS_PUBLIC_KEY) &&
+    looksReal(EMAILJS_SERVICE_ID) &&
+    looksReal(EMAILJS_TEMPLATE_ID) &&
+    window.emailjs
+  );
+}
+
+function formatEmailJsError(err) {
+  if (!err) return 'unknown error';
+  const parts = [];
+  if (typeof err.status !== 'undefined') parts.push(`status=${err.status}`);
+  if (typeof err.text !== 'undefined') parts.push(`text=${err.text}`);
+  if (typeof err.message !== 'undefined') parts.push(`message=${err.message}`);
+  if (!parts.length) {
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return String(err);
+    }
+  }
+  return parts.join(', ');
+}
+
+async function dispatchAlert(kind, severity, message, force = false) {
+  const prefs = saveAlertPrefs();
+  const cooldownMs = Math.max(1, prefs.cooldown) * 60 * 1000;
+  const key = `${kind}:${severity}`;
+  const now = Date.now();
+
+  if (!force) {
+    const last = appState.alerts.lastByKey[key] || 0;
+    if (now - last < cooldownMs) return;
+  }
+
+  appState.alerts.lastByKey[key] = now;
+
+  const payload = {
+    kind,
+    severity,
+    message,
+    ts: new Date().toISOString(),
+    toEmail: prefs.email || '',
+    latest: appState.latest
+  };
+
+  let delivered = false;
+  const channelInfo = [];
+
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(`Rover ${severity} alert`, { body: message });
+    delivered = true;
+    channelInfo.push('browser');
+  }
+
+  if (emailJsConfigured() && payload.toEmail.trim()) {
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          to_email: payload.toEmail,
+          kind,
+          severity,
+          message,
+          ts: payload.ts,
+          ai_score: fmt(appState.latest.aiScore),
+          temp: fmt(appState.latest.temp),
+          hum: fmt(appState.latest.hum),
+          gas: fmt(appState.latest.gas),
+          soil: fmt(appState.latest.soil),
+          distance: fmt(appState.latest.distance)
+        },
+        { publicKey: EMAILJS_PUBLIC_KEY }
+      );
+      channelInfo.push('emailjs');
+      delivered = true;
+    } catch (err) {
+      pushAlertLog(`[WARN] EmailJS send failed: ${formatEmailJsError(err)}`);
+    }
+  } else if (!payload.toEmail.trim()) {
+    pushAlertLog('[WARN] EmailJS skipped: Email target is empty.');
+  } else {
+    pushAlertLog('[WARN] EmailJS skipped: missing/placeholder EmailJS credentials.');
+  }
+
+  const webhook = prefs.webhook || ALERT_WEBHOOK_URL_DEFAULT;
+  if (webhook) {
+    try {
+      await fetch(webhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      delivered = true;
+      channelInfo.push('webhook');
+    } catch {
+      // ignore; reflected in status below
+    }
+  }
+
+  if (prefs.telegram) channelInfo.push(`telegram:${prefs.telegram}`);
+
+  pushAlertLog(`[${severity}] ${kind} - ${message}`);
+  el.alertStatus.innerText = delivered
+    ? `Alert sent/queued via ${channelInfo.join(', ') || 'available channels'}: ${message}`
+    : `Alert generated (no delivery endpoint available): ${message}`;
+}
+
+function evaluateAlerts(forecastRisk, multiAnomalyScore) {
+  if (forecastRisk === 'High') {
+    dispatchAlert('forecast', 'HIGH', 'Forecast risk is HIGH. Immediate intervention recommended.');
+  }
+
+  if (appState.latest.aiScore < 60) {
+    dispatchAlert('suitability', 'MEDIUM', `AI suitability dropped to ${fmt(appState.latest.aiScore)}.`);
+  }
+
+  if (appState.latest.gas > 240) {
+    dispatchAlert('gas', 'HIGH', `Gas level elevated (${fmt(appState.latest.gas)}). Increase ventilation now.`);
+  }
+
+  if (multiAnomalyScore.flag) {
+    dispatchAlert('anomaly', 'HIGH', `Multivariate anomaly detected (score ${multiAnomalyScore.score.toFixed(2)}).`);
+  }
+}
+
+function clearAlertLog() {
+  appState.alerts.log = [];
+  el.alertLog.innerHTML = '';
+  el.alertStatus.innerText = 'Alert log cleared.';
+}
+
+async function fetchWeatherIfNeeded() {
+  if (typeof WEATHER_LAT !== 'number' || typeof WEATHER_LON !== 'number') {
+    el.weatherStatus.innerText = appState.weather.status;
+    return;
+  }
+
+  const now = Date.now();
+  if (now - appState.weather.lastUpdate < 10 * 60 * 1000) return;
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`;
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    const current = data.current || {};
+    appState.weather.temp = Number(current.temperature_2m);
+    appState.weather.hum = Number(current.relative_humidity_2m);
+    appState.weather.wind = Number(current.wind_speed_10m);
+    appState.weather.lastUpdate = now;
+    appState.weather.status = `Weather updated ${new Date(now).toLocaleTimeString()}.`;
+  } catch {
+    appState.weather.status = 'Weather request failed. Using sensor-only predictions.';
+  }
+
+  el.weatherTemp.innerText = `Temp: ${fmt(appState.weather.temp)} degC`;
+  el.weatherHum.innerText = `Humidity: ${fmt(appState.weather.hum)}%`;
+  el.weatherWind.innerText = `Wind: ${fmt(appState.weather.wind)} km/h`;
+  el.weatherStatus.innerText = appState.weather.status;
 }
 
 function createChatBubble(role) {
   const div = document.createElement('div');
   div.className = 'chat-msg';
-  div.innerHTML = `<b>${role}: <span class="chat-content">`;
+  div.innerHTML = `<b>${role}: <span class="chat-content"></span></b>`;
   el.chatBox.appendChild(div);
   el.chatBox.scrollTop = el.chatBox.scrollHeight;
   return div.querySelector('.chat-content');
@@ -1252,14 +2189,11 @@ function addChat(role, text) {
   span.innerHTML = renderChatText(text);
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function addChatTypewriter(role, text, msPerChar = 12) {
+async function addChatTypewriter(role, text, msPerChar = 11) {
   const span = createChatBubble(role);
   span.classList.add('typing');
   let out = '';
+
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
     out += ch;
@@ -1268,6 +2202,7 @@ async function addChatTypewriter(role, text, msPerChar = 12) {
     const extra = /[.!?\n]/.test(ch) ? 45 : 0;
     await sleep(msPerChar + extra);
   }
+
   span.classList.remove('typing');
 }
 
@@ -1275,6 +2210,7 @@ function buildDetailedStatus() {
   const s = appState.latest;
   const cls = s.aiClass === 1 ? 'Suitable' : 'Not Suitable';
   const topContrib = localPredictionWithExplain(s).contributions.sort((a, b) => b.points - a.points)[0];
+
   return [
     'Current system summary:',
     `- Suitability: ${fmt(s.aiScore)}/100 (${cls}), confidence ${Number.isNaN(s.aiConf) ? '--' : s.aiConf.toFixed(2)}.`,
@@ -1286,30 +2222,12 @@ function buildDetailedStatus() {
 }
 
 function buildDetailedForecast() {
-  const steps10 = Math.round((10 * 60) / (POLL_INTERVAL_MS / 1000));
-  const steps30 = Math.round((30 * 60) / (POLL_INTERVAL_MS / 1000));
-  const steps60 = Math.round((60 * 60) / (POLL_INTERVAL_MS / 1000));
-  const f = {
-    temp10: linearForecast(appState.history.temp, steps10),
-    temp30: linearForecast(appState.history.temp, steps30),
-    temp60: linearForecast(appState.history.temp, steps60),
-    hum10: linearForecast(appState.history.hum, steps10),
-    hum30: linearForecast(appState.history.hum, steps30),
-    hum60: linearForecast(appState.history.hum, steps60),
-    gas10: linearForecast(appState.history.gas, steps10),
-    gas30: linearForecast(appState.history.gas, steps30),
-    gas60: linearForecast(appState.history.gas, steps60),
-    soil10: linearForecast(appState.history.soil, steps10),
-    soil30: linearForecast(appState.history.soil, steps30),
-    soil60: linearForecast(appState.history.soil, steps60)
-  };
   return [
     'Forecast details:',
-    `- Temperature now ${fmt(appState.latest.temp)} -> +10m ${fmt(f.temp10)}, +30m ${fmt(f.temp30)}, +60m ${fmt(f.temp60)}.`,
-    `- Humidity now ${fmt(appState.latest.hum)} -> +10m ${fmt(f.hum10)}, +30m ${fmt(f.hum30)}, +60m ${fmt(f.hum60)}.`,
-    `- Gas now ${fmt(appState.latest.gas)} -> +10m ${fmt(f.gas10)}, +30m ${fmt(f.gas30)}, +60m ${fmt(f.gas60)}.`,
-    `- Soil now ${fmt(appState.latest.soil)} -> +10m ${fmt(f.soil10)}, +30m ${fmt(f.soil30)}, +60m ${fmt(f.soil60)}.`,
-    `- Overall forecast risk: ${el.forecastRisk.innerText.replace('Forecast risk: ', '')}.`
+    `- ${el.forecastRisk.innerText}.`,
+    `- Weather note: ${el.forecastWeatherNote.innerText.replace('Weather fusion: ', '')}.`,
+    '- Uncertainty chart shows 95% confidence bounds for temperature (+10m/+30m/+60m).',
+    '- Wider band = less certainty, so prioritize more sampling in unstable windows.'
   ].join('\n');
 }
 
@@ -1317,6 +2235,7 @@ function buildDetailedActions() {
   if (!appState.recommendations.length) {
     return 'Recommended actions are still being generated; wait for a few sensor cycles.';
   }
+
   const lines = ['Top recommended actions right now:'];
   appState.recommendations.slice(0, 5).forEach((r, i) => lines.push(`${i + 1}. ${r}`));
   lines.push('These are ranked using live conditions + your Upvote/Downvote feedback history.');
@@ -1329,7 +2248,7 @@ function buildDetailedMaintenance() {
     `- Pump health: ${el.pumpPct.innerText}.`,
     `- Fan health: ${el.fanPct.innerText}.`,
     `- Sensor network health: ${el.sensorPct.innerText}.`,
-    `- Sensor diagnostics: ${Object.entries(appState.health).map(([k, v]) => `${k}=${v}`).join(', ') || 'learning'}.`
+    `- RUL summary: ${Object.entries(appState.rul).map(([k, h]) => `${k}=${Number.isNaN(h) ? 'learning' : `${h.toFixed(0)}h`}`).join(', ')}.`
   ].join('\n');
 }
 
@@ -1341,64 +2260,222 @@ function buildDetailedExplainability() {
   return lines.join('\n');
 }
 
+function buildOptimizerSummary() {
+  if (!appState.optimizer.bestAction) return 'Optimizer is waiting for sufficient data.';
+  const b = appState.optimizer.bestAction;
+  const w = appState.optimizer.weights;
+  return [
+    'Optimizer summary:',
+    `- Best action: ${b.name}.`,
+    `- Utility: ${b.utility.toFixed(2)}.`,
+    `- Weights -> yield ${w.yield.toFixed(2)}, water ${w.water.toFixed(2)}, energy ${w.energy.toFixed(2)}.`,
+    `- Suggested setpoint: pump ${b.ctrl.pump}%, fan ${b.ctrl.fan}%, mist ${b.ctrl.mist}%.`
+  ].join('\n');
+}
+
+function buildRetrainSummary() {
+  return [
+    'Model retraining summary:',
+    `- Dataset size: ${appState.retrain.dataset.length}.`,
+    `- Model version: v${appState.retrain.model.version}.`,
+    `- Last train: ${appState.retrain.model.lastTrain}.`,
+    '- Retraining runs through remote pipeline only when AI_RETRAIN_URL is configured.'
+  ].join('\n');
+}
+
 function chatReply(q) {
   const text = q.toLowerCase();
+
   if (text.includes('status') || text.includes('summary') || text.includes('overview')) return buildDetailedStatus();
   if (text.includes('forecast') || text.includes('predict')) return buildDetailedForecast();
   if (text.includes('action') || text.includes('what should') || text.includes('do')) return buildDetailedActions();
   if (text.includes('next') || text.includes('waypoint') || text.includes('where')) {
-    return `Next waypoint recommendation:\n- ${el.nextWaypoint.innerText || '--'}\n- Position feed note: ${el.positionInfo.innerText || '--'}`;
+    return `Next waypoint recommendation:\n- ${el.nextWaypoint.innerText || '--'}\n- RL planner: ${el.rlStatus.innerText || '--'}`;
   }
   if (text.includes('anomaly')) {
     if (!appState.anomalies.length) return 'Anomaly report:\n- No anomalies currently detected in recent windows.';
     return `Anomaly report:\n${appState.anomalies.slice(0, 5).map((a, i) => `${i + 1}. ${a}`).join('\n')}`;
   }
-  if (text.includes('maintenance') || text.includes('health')) return buildDetailedMaintenance();
-  if (text.includes('vision') || text.includes('leaf') || text.includes('image')) {
-    return `Vision fusion status:\n- ${el.visionResult.innerText}\n- This signal is merged into action prioritization when stress is medium/high.`;
+  if (text.includes('maintenance') || text.includes('health') || text.includes('rul')) return buildDetailedMaintenance();
+  if (text.includes('vision') || text.includes('leaf') || text.includes('image') || text.includes('disease')) {
+    return `Vision fusion status:\n- ${el.visionResult.innerText}\n- This signal influences recommendation ranking and risk prioritization.`;
   }
   if (text.includes('explain') || text.includes('why') || text.includes('contribution')) return buildDetailedExplainability();
+  if (text.includes('optimizer') || text.includes('pareto') || text.includes('multi-objective')) return buildOptimizerSummary();
+  if (text.includes('retrain') || text.includes('model')) return buildRetrainSummary();
+  if (text.includes('alert')) return `Alert status:\n- ${el.alertStatus.innerText}\n- Recent: ${appState.alerts.log[0] || 'no alerts yet'}`;
+
   return [
     'I can give detailed answers from live dashboard data.',
     'Try one of these:',
-    '- \"status summary\"',
-    '- \"detailed forecast\"',
-    '- \"what actions should I do now\"',
-    '- \"explain why score changed\"',
-    '- \"maintenance health details\"',
-    '- \"next waypoint and reason\"'
+    '- "status summary"',
+    '- "detailed forecast"',
+    '- "what actions should I do now"',
+    '- "optimizer summary"',
+    '- "maintenance and RUL"',
+    '- "model retraining status"',
+    '- "next waypoint and reason"'
   ].join('\n');
 }
 
-function fmt(v) {
-  return Number.isNaN(v) ? '--' : (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(1));
+function buildMissionReport() {
+  const s = appState.latest;
+  const lines = [];
+
+  lines.push(`# Rover Hydroponics Mission Report`);
+  lines.push(`Generated: ${new Date().toLocaleString()}`);
+  lines.push('');
+
+  lines.push('## 1) Current State');
+  lines.push(`- AI Score: ${fmt(s.aiScore)} / 100`);
+  lines.push(`- AI Class: ${s.aiClass === 1 ? 'Suitable' : 'Not Suitable'}`);
+  lines.push(`- Confidence: ${Number.isNaN(s.aiConf) ? '--' : s.aiConf.toFixed(2)}`);
+  lines.push(`- Distance: ${fmt(s.distance)} cm`);
+  lines.push(`- Soil: ${fmt(s.soil)}`);
+  lines.push(`- Gas: ${fmt(s.gas)}`);
+  lines.push(`- Temperature: ${fmt(s.temp)} degC`);
+  lines.push(`- Humidity: ${fmt(s.hum)} %`);
+  lines.push('');
+
+  lines.push('## 2) Forecast & Risk');
+  lines.push(`- ${el.forecastRisk.innerText}`);
+  lines.push(`- ${el.forecastWeatherNote.innerText}`);
+  lines.push('');
+
+  lines.push('## 3) Alerts & Anomalies');
+  lines.push(`- Anomaly count: ${appState.anomalies.length}`);
+  for (const a of appState.anomalies.slice(0, 5)) lines.push(`- ${a}`);
+  lines.push(`- Latest alert: ${appState.alerts.log[0] || 'none'}`);
+  lines.push('');
+
+  lines.push('## 4) Recommendations');
+  appState.recommendations.slice(0, 5).forEach((r, i) => lines.push(`${i + 1}. ${r}`));
+  lines.push('');
+
+  lines.push('## 5) Autonomous Planning');
+  lines.push(`- ${el.nextWaypoint.innerText}`);
+  lines.push(`- ${el.rlStatus.innerText}`);
+  lines.push('');
+
+  lines.push('## 6) Maintenance');
+  lines.push(`- Pump: ${el.pumpPct.innerText}`);
+  lines.push(`- Fan: ${el.fanPct.innerText}`);
+  lines.push(`- Sensors: ${el.sensorPct.innerText}`);
+  lines.push(`- RUL: ${Object.entries(appState.rul).map(([k, h]) => `${k}=${Number.isNaN(h) ? 'learning' : `${h.toFixed(0)}h`}`).join(', ')}`);
+  lines.push('');
+
+  lines.push('## 7) Model Ops');
+  lines.push(`- Version: v${appState.retrain.model.version}`);
+  lines.push(`- Last retrain: ${appState.retrain.model.lastTrain}`);
+  lines.push(`- Dataset size: ${appState.retrain.dataset.length}`);
+
+  return lines.join('\n');
 }
 
-// DHT error code: treat -999 (or similar sentinel) as missing data.
-function sanitizeDhtValue(v) {
-  return (Number.isNaN(v) || v <= -900) ? NaN : v;
+function downloadReportText() {
+  const text = el.reportOutput.value.trim();
+  if (!text) return;
+  const blob = new Blob([text], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `rover_report_${new Date().toISOString().slice(0, 19).replaceAll(':', '-')}.md`;
+  document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(a.href);
+  a.remove();
 }
 
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
+async function analyzeVision(file) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
 
-function syntheticPosition() {
-  appState.sampleCount += 1;
-  return {
-    x: (appState.sampleCount * 17) % 100,
-    y: (appState.sampleCount * 29) % 100
-  };
+  return new Promise((resolve) => {
+    img.onload = async () => {
+      const cvs = el.visionCanvas;
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+      ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+
+      const data = ctx.getImageData(0, 0, cvs.width, cvs.height).data;
+      let greenScore = 0;
+      let yellowScore = 0;
+      let brownScore = 0;
+      let total = 0;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const sum = r + g + b + 1;
+
+        const gn = g / sum;
+        const rn = r / sum;
+        const bn = b / sum;
+
+        greenScore += gn;
+        yellowScore += Math.max(0, (rn + gn) - bn - 0.5);
+        brownScore += Math.max(0, rn - gn + 0.12);
+        total += 1;
+      }
+
+      const greenRatio = greenScore / total;
+      const yellowRatio = clamp(yellowScore / total, 0, 1);
+      const brownRatio = clamp(brownScore / total, 0, 1);
+
+      let probs = {
+        healthy: clamp(greenRatio * 1.9 - yellowRatio * 0.8 - brownRatio * 1.2, 0, 1),
+        chlorosis: clamp(yellowRatio * 2.2 + (1 - greenRatio) * 0.6, 0, 1),
+        necrosis: clamp(brownRatio * 2.1 + (1 - greenRatio) * 0.5, 0, 1),
+        fungal_risk: clamp((appState.latest.hum > 75 ? 0.35 : 0) + brownRatio * 1.2 + yellowRatio * 0.4, 0, 1)
+      };
+
+      if (AI_VISION_URL) {
+        try {
+          const res = await fetch(AI_VISION_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              greenRatio,
+              yellowRatio,
+              brownRatio,
+              humidity: appState.latest.hum,
+              temperature: appState.latest.temp
+            })
+          });
+          if (res.ok) {
+            const remote = await res.json();
+            if (remote && remote.probabilities) probs = remote.probabilities;
+          }
+        } catch {
+          // local fallback remains active
+        }
+      }
+
+      const sumP = Math.max(1e-6, Object.values(probs).reduce((a, b) => a + b, 0));
+      for (const k of Object.keys(probs)) probs[k] = probs[k] / sumP;
+
+      const sorted = Object.entries(probs).sort((a, b) => b[1] - a[1]);
+      const top = sorted[0];
+
+      appState.vision.greenRatio = greenRatio;
+      appState.vision.classes = probs;
+      appState.vision.stress = (top[0] === 'healthy' && top[1] > 0.55) ? 'low' : (top[1] > 0.45 ? 'high' : 'medium');
+
+      el.visionResult.innerText = `Greenness ${greenRatio.toFixed(3)} | Top class ${top[0].toUpperCase()} (${(top[1] * 100).toFixed(1)}%) | healthy ${(probs.healthy * 100).toFixed(1)}%, chlorosis ${(probs.chlorosis * 100).toFixed(1)}%, necrosis ${(probs.necrosis * 100).toFixed(1)}%, fungal ${(probs.fungal_risk * 100).toFixed(1)}%.`;
+
+      URL.revokeObjectURL(url);
+      resolve();
+    };
+
+    img.src = url;
+  });
 }
 
 async function fetchLatest() {
   const stamp = new Date();
   el.pollStatus.innerText = `Polling: ${stamp.toLocaleTimeString()}`;
+
+  await fetchWeatherIfNeeded();
 
   const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds/last.json?api_key=${THINGSPEAK_READ_API_KEY}`;
   const res = await fetch(url, { cache: 'no-store' });
@@ -1450,64 +2527,106 @@ async function fetchLatest() {
 
   updateHumidityGauge(hum);
 
-  const model = localPredictionWithExplain(appState.latest);
-  let aiScore = model.score;
-  let aiClass = model.cls;
-  let aiConf = model.conf;
-  let source = 'Local model';
+  const localModel = localPredictionWithExplain(appState.latest);
+  let model = {
+    score: localModel.score,
+    cls: localModel.cls,
+    conf: localModel.conf,
+    contributions: localModel.contributions
+  };
+  let source = 'Local model (rule+calibration)';
 
-  if (!Number.isNaN(aiScoreField) && !Number.isNaN(aiClassField) && !Number.isNaN(aiConfField)) {
-    aiScore = aiScoreField;
-    aiClass = aiClassField;
-    aiConf = aiConfField;
+  const remote = await remotePredict({
+    sensors: appState.latest,
+    weather: appState.weather,
+    modelVersion: appState.retrain.model.version
+  });
+
+  if (remote) {
+    model = {
+      score: clamp(remote.score, 0, 100),
+      cls: remote.cls === 1 ? 1 : 0,
+      conf: clamp(remote.conf, 0, 1),
+      contributions: remote.contributions || localModel.contributions
+    };
+    source = 'Remote ML API';
+  } else if (!Number.isNaN(aiScoreField) && !Number.isNaN(aiClassField) && !Number.isNaN(aiConfField)) {
+    model = {
+      score: clamp(aiScoreField, 0, 100),
+      cls: aiClassField === 1 ? 1 : 0,
+      conf: clamp(aiConfField, 0, 1),
+      contributions: localModel.contributions
+    };
     source = 'Arduino model (ThingSpeak fields 6-8)';
   }
 
-  appState.latest.aiScore = aiScore;
-  appState.latest.aiClass = aiClass;
-  appState.latest.aiConf = aiConf;
-  pushHistory('score', aiScore);
+  appState.latest.aiScore = model.score;
+  appState.latest.aiClass = model.cls;
+  appState.latest.aiConf = model.conf;
+
+  pushHistory('score', model.score);
 
   el.sourceStatus.innerText = `AI Source: ${source}`;
-  el.aiReason.innerText = `Explainability driver: ${[...model.contributions].sort((a,b) => b.points - a.points)[0].name}.`;
-  el.aiScorePill.innerText = `${aiClass === 1 ? 'Suitable' : 'Not Suitable'} | ${fmt(aiScore)}/100 | conf ${aiConf.toFixed(2)}`;
-  el.kpiScore.innerText = fmt(aiScore);
-  el.kpiClass.innerText = aiClass === 1 ? 'Suitable' : 'Not Suitable';
-  el.kpiConf.innerText = aiConf.toFixed(2);
+  const sortedContrib = [...model.contributions].sort((a, b) => b.points - a.points);
+  el.aiReason.innerText = `Explainability driver: ${sortedContrib[0] ? sortedContrib[0].name : '--'}.`;
+  el.aiScorePill.innerText = `${model.cls === 1 ? 'Suitable' : 'Not Suitable'} | ${fmt(model.score)}/100 | conf ${model.conf.toFixed(2)}`;
+  el.kpiScore.innerText = fmt(model.score);
+  el.kpiClass.innerText = model.cls === 1 ? 'Suitable' : 'Not Suitable';
+  el.kpiConf.innerText = model.conf.toFixed(2);
   el.kpiLast.innerText = ts.toLocaleTimeString();
+  el.weatherImpactKpi.innerText = `${localModel.weather.scoreDelta >= 0 ? '+' : ''}${localModel.weather.scoreDelta.toFixed(1)} pts`;
 
   renderContributions(model.contributions);
-  renderForecasts();
-  detectAnomalies();
+
+  const forecastOut = renderForecasts();
+  const multi = detectAnomalies();
   evaluateSensorHealth();
+  evaluateOptimizer();
   buildRecommendations(model);
   renderSimulation();
   updateMaintenance();
 
-  let useX = posX, useY = posY;
+  let useX = posX;
+  let useY = posY;
+
   if (Number.isNaN(useX) || Number.isNaN(useY)) {
-    const synth = syntheticPosition();
-    useX = synth.x;
-    useY = synth.y;
-    el.positionInfo.innerText = `Position feed missing; using synthetic scan path (${Math.round(useX)}, ${Math.round(useY)}).`;
+    el.positionInfo.innerText = 'Position feed missing; heatmap and waypoint updates paused until real position data is available.';
+    drawHeatmap();
+    el.nextWaypoint.innerText = 'Waiting for real position feed...';
+    el.rlStatus.innerText = 'RL planner paused (no position feed).';
   } else {
     el.positionInfo.innerText = `Position from feed: (${fmt(useX)}, ${fmt(useY)}).`;
+    addHeatSample(clamp(useX, 0, 100), clamp(useY, 0, 100), model.score);
+    drawHeatmap();
+    const waypoint = suggestNextWaypointRl(clamp(useX, 0, 100), clamp(useY, 0, 100), model.score / 100);
+    el.nextWaypoint.innerText = `Go to approx (${waypoint.xPct}, ${waypoint.yPct}) because ${waypoint.reason}.`;
   }
 
-  addHeatSample(clamp(useX, 0, 100), clamp(useY, 0, 100), aiScore);
-  drawHeatmap();
-  const wp = suggestNextWaypoint();
-  if (wp) el.nextWaypoint.innerText = `Go to approx (${wp.xPct}, ${wp.yPct}) because ${wp.reason}.`;
+  appendTrainingSample(ts);
+  updateModelBadges();
+  evaluateAlerts(forecastOut.risk, multi);
 }
 
 function bindEvents() {
-  el.toggleUltrasonic.addEventListener('change', e => { ultrasonicEnabled = e.target.checked; });
-  el.toggleSoil.addEventListener('change', e => { soilEnabled = e.target.checked; });
-  el.toggleGas.addEventListener('change', e => { gasEnabled = e.target.checked; });
+  el.toggleUltrasonic.addEventListener('change', e => {
+    ultrasonicEnabled = e.target.checked;
+  });
+
+  el.toggleSoil.addEventListener('change', e => {
+    soilEnabled = e.target.checked;
+  });
+
+  el.toggleGas.addEventListener('change', e => {
+    gasEnabled = e.target.checked;
+  });
 
   el.refreshBtn.addEventListener('click', () => runCycle());
 
   [el.simTemp, el.simHum, el.simSoil, el.simGas].forEach(inp => inp.addEventListener('input', renderSimulation));
+
+  [el.optYield, el.optWater, el.optEnergy].forEach(inp => inp.addEventListener('input', () => {
+    evaluateOptimizer();
+  }));
 
   el.recommendationsList.addEventListener('click', (e) => {
     const btn = e.target.closest('button.rec-btn');
@@ -1521,47 +2640,42 @@ function bindEvents() {
   el.visionInput.addEventListener('change', async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+    await analyzeVision(file);
+    buildRecommendations(localPredictionWithExplain(appState.latest));
+  });
 
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      const cvs = el.visionCanvas;
-      const ctx = cvs.getContext('2d');
-      ctx.clearRect(0, 0, cvs.width, cvs.height);
-      ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+  el.retrainBtn.addEventListener('click', async () => {
+    await triggerRetrain();
+  });
 
-      const data = ctx.getImageData(0, 0, cvs.width, cvs.height).data;
-      let gAcc = 0, total = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i], g = data[i + 1], b = data[i + 2];
-        const sum = r + g + b + 1;
-        gAcc += g / sum;
-        total += 1;
-      }
+  el.exportDatasetBtn.addEventListener('click', () => {
+    downloadDataset();
+  });
 
-      const ratio = gAcc / total;
-      appState.vision.greenRatio = ratio;
-      let stress = 'low';
-      if (ratio < 0.36) stress = 'high';
-      else if (ratio < 0.42) stress = 'medium';
-      appState.vision.stress = stress;
-      el.visionResult.innerText = `Greenness index: ${ratio.toFixed(3)} | Estimated leaf stress: ${stress.toUpperCase()}.`;
+  [el.alertEmail, el.alertTelegram, el.alertWebhook, el.alertCooldown].forEach(inp => {
+    inp.addEventListener('change', () => saveAlertPrefs());
+  });
 
-      URL.revokeObjectURL(url);
-      buildRecommendations(localPredictionWithExplain(appState.latest));
-    };
-    img.src = url;
+  el.testAlertBtn.addEventListener('click', () => {
+    dispatchAlert('test', 'INFO', 'Test alert from Rover dashboard.', true);
+  });
+
+  el.clearAlertLogBtn.addEventListener('click', () => {
+    clearAlertLog();
   });
 
   async function sendChat() {
     const q = el.chatInput.value.trim();
     if (!q || chatTyping) return;
+
     chatTyping = true;
     el.chatSend.disabled = true;
     el.chatInput.disabled = true;
+
     addChat('You', q);
     const r = chatReply(q);
     await addChatTypewriter('AI', r);
+
     el.chatInput.value = '';
     el.chatSend.disabled = false;
     el.chatInput.disabled = false;
@@ -1573,6 +2687,14 @@ function bindEvents() {
   el.chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') sendChat();
   });
+
+  el.generateReportBtn.addEventListener('click', () => {
+    el.reportOutput.value = buildMissionReport();
+  });
+
+  el.downloadReportBtn.addEventListener('click', () => {
+    downloadReportText();
+  });
 }
 
 async function runCycle() {
@@ -1583,10 +2705,31 @@ async function runCycle() {
   }
 }
 
-bindEvents();
-addChat('AI', 'Copilot ready. Ask me: status, forecast, actions, anomalies, maintenance, next waypoint, or vision.');
-runCycle();
-setInterval(runCycle, POLL_INTERVAL_MS);
+async function init() {
+  loadAlertPrefs();
+  if (emailJsConfigured()) {
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+    el.alertStatus.innerText = 'EmailJS ready. Alerts can be sent to Email target.';
+  } else {
+    el.alertStatus.innerText = 'EmailJS not configured. Fill EMAILJS placeholders to enable email alerts.';
+  }
+  updateModelBadges();
+  el.datasetSize.innerText = `Dataset: ${appState.retrain.dataset.length}`;
+
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  bindEvents();
+  addChat('AI', 'Copilot ready. Ask me: status, forecast, actions, optimizer, maintenance/RUL, retrain, or next waypoint.');
+
+  evaluateOptimizer();
+
+  await runCycle();
+  setInterval(runCycle, POLL_INTERVAL_MS);
+}
+
+init();
 </script>
 </body>
 </html>
