@@ -104,7 +104,6 @@
   #featureSection { order: 3; }
   #sensorSection { order: 4; }
   #chartSection { order: 5; }
-  #tableSection { order: 6; }
 
   .sensor-grid {
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -113,11 +112,6 @@
   .chart-grid {
     grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
     margin-top: 10px;
-  }
-
-  .table-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    margin-top: 14px;
   }
 
   .feature-grid {
@@ -556,8 +550,7 @@
 
   @media (max-width: 900px) {
     .feature-grid,
-    .chart-grid,
-    .table-grid {
+    .chart-grid {
       grid-template-columns: 1fr;
     }
 
@@ -622,24 +615,36 @@
       <h3>Ultrasonic (cm)</h3>
       <div class="value" id="ultrasonicValue">--</div>
       <label class="toggle-row"><input type="checkbox" id="toggleUltrasonic" checked> Stream on chart</label>
+      <table id="ultrasonicTable">
+        <tr><th>Time</th><th>Value</th></tr>
+      </table>
     </div>
 
     <div class="panel">
       <h3>Soil Moisture</h3>
       <div class="value" id="soilValue">--</div>
       <label class="toggle-row"><input type="checkbox" id="toggleSoil" checked> Stream on chart</label>
+      <table id="soilTable">
+        <tr><th>Time</th><th>Value</th></tr>
+      </table>
     </div>
 
     <div class="panel">
       <h3>Gas (MQ-135)</h3>
       <div class="value" id="gasValue">--</div>
       <label class="toggle-row"><input type="checkbox" id="toggleGas" checked> Stream on chart</label>
+      <table id="gasTable">
+        <tr><th>Time</th><th>Value</th></tr>
+      </table>
     </div>
 
     <div class="panel">
       <h3>Temperature (°C)</h3>
       <div class="value" id="tempValue">--</div>
       <div class="tiny">Live reading used in forecasting and recommendations.</div>
+      <table id="tempTable">
+        <tr><th>Time</th><th>Value</th></tr>
+      </table>
     </div>
 
     <div class="panel">
@@ -650,6 +655,9 @@
         </div>
         <div class="tiny" id="humidityCaption">Waiting for humidity data...</div>
       </div>
+      <table id="humTable">
+        <tr><th>Time</th><th>Value</th></tr>
+      </table>
     </div>
   </div>
 
@@ -677,43 +685,6 @@
     <div class="panel">
       <h3>Forecast Uncertainty (Temperature)</h3>
       <canvas id="forecastBandChart" height="200"></canvas>
-    </div>
-  </div>
-
-  <div class="grid table-grid" id="tableSection">
-    <div class="panel">
-      <h3>Ultrasonic Table</h3>
-      <table id="ultrasonicTable">
-        <tr><th>Time</th><th>Value</th></tr>
-      </table>
-    </div>
-
-    <div class="panel">
-      <h3>Soil Moisture Table</h3>
-      <table id="soilTable">
-        <tr><th>Time</th><th>Value</th></tr>
-      </table>
-    </div>
-
-    <div class="panel">
-      <h3>Gas Table</h3>
-      <table id="gasTable">
-        <tr><th>Time</th><th>Value</th></tr>
-      </table>
-    </div>
-
-    <div class="panel">
-      <h3>Temperature Table</h3>
-      <table id="tempTable">
-        <tr><th>Time</th><th>Value</th></tr>
-      </table>
-    </div>
-
-    <div class="panel">
-      <h3>Humidity Table</h3>
-      <table id="humTable">
-        <tr><th>Time</th><th>Value</th></tr>
-      </table>
     </div>
   </div>
 
