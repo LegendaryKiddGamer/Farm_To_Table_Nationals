@@ -77,7 +77,7 @@ const dashboardDir = path.resolve(__dirname, '..');
 app.use(express.static(dashboardDir));
 
 app.get('/', (_, res) => {
-  res.sendFile(path.join(dashboardDir, 'dashboard_thingspeak_ai.html'));
+  res.sendFile(path.join(dashboardDir, 'index.html'));
 });
 
 app.listen(3000, () => console.log('Backend running on http://localhost:3000'));
